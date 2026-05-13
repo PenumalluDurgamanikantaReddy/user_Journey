@@ -1,6 +1,6 @@
 'use client';
 
-import { FilterState, CONTENT_SOURCES, LANGUAGES, PHASES, getContentLabel } from '@/app/data/mockData';
+import { FilterState, CONTENT_SOURCES, LANGUAGES, PHASES, getContentLabel, ContentSource } from '@/app/data/mockData';
 
 interface FiltersProps {
   filters: FilterState;
@@ -10,7 +10,7 @@ interface FiltersProps {
 export default function Filters({ filters, onFilterChange }: FiltersProps) {
   const handleContentChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
-    onFilterChange({ ...filters, content: value ? [value as any] : [] });
+    onFilterChange({ ...filters, content: value ? [value as ContentSource] : [] });
   };
 
   const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

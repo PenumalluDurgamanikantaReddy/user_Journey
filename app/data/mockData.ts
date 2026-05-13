@@ -50,8 +50,10 @@ export const mockUsers: User[] = [
   { id: '15', name: 'Paulo Santos', email: 'paulo@example.com', medium: 'courses', conversationType: 'courses', language: 'Portuguese', brand: 'Biblword', date: '2024-04-10', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 93 },
 ];
 
+export type ContentSource = 'social-media' | 'website' | 'ads' | 'youversion' | 'ai' | 'courses';
+
 export interface FilterState {
-  content: Medium[];
+  content: ContentSource[];
   languages: string[];
   phases: Phase[];
   statuses: ('active' | 'inactive')[];
@@ -62,7 +64,7 @@ export const BRANDS = ['Biblword', 'SheRises', 'AlKitab', 'Search4Truth'];
 export const LANGUAGES = ['English', 'Spanish', 'Arabic', 'Portuguese', 'Korean', 'Chinese', 'Italian', 'Hindi', 'German'];
 export const PHASES: Phase[] = ['evangelism', 'discipleship', 'leadership'];
 export const MEDIUMS = ['facebook', 'instagram', 'ads', 'youversion', 'website', 'ai', 'courses'];
-export const CONTENT_SOURCES = ['social-media', 'website', 'ads', 'youversion', 'ai', 'courses'] as const;
+export const CONTENT_SOURCES: ContentSource[] = ['social-media', 'website', 'ads', 'youversion', 'ai', 'courses'];
 
 export const getContentLabel = (content: string): string => {
   const labels: Record<string, string> = {
@@ -107,7 +109,8 @@ export const filterUsers = (users: User[], filters: FilterState): User[] => {
       if (selectedContent === 'social-media') {
         contentMatch = user.medium === 'facebook' || user.medium === 'instagram';
       } else {
-        contentMatch = filters.content.includes(user.medium);
+        // Map content source to medium (they have the same names except social-media)
+        contentMatch = user.medium === selectedContent;
       }
     }
     
