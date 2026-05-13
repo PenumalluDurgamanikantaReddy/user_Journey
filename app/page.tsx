@@ -1,65 +1,68 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import Filters from '@/app/components/Filters';
+import SankeyVisualization from '@/app/components/SankeyVisualization';
+import DetailedStats from '@/app/components/DetailedStats';
+import UserExplorer from '@/app/components/UserExplorer';
+import { mockUsers, filterUsers, FilterState } from '@/app/data/mockData';
 
 export default function Home() {
+  const [filters, setFilters] = useState<FilterState>({
+    content: [],
+    languages: [],
+    phases: [],
+    statuses: [],
+    dateRange: { start: '2024-01-01', end: '2024-12-31' }
+  });
+
+  const filteredUsers = filterUsers(mockUsers, filters);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="text-center mb-6">
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-3">
+              🎯 User Journey Analytics
+            </h1>
+            <p className="text-xl text-gray-600">
+              Track and analyze user engagement across all platforms and channels
+            </p>
+          </div>
+
+          {/* Compact Stats Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Users in Dataset</p>
+              <p className="text-3xl font-bold text-blue-600">{mockUsers.length}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Filtered Results</p>
+              <p className="text-3xl font-bold text-purple-600">{filteredUsers.length}</p>
+            </div>
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">Filter Coverage</p>
+              <p className="text-3xl font-bold text-green-600">
+                {Math.round((filteredUsers.length / mockUsers.length) * 100)}%
+              </p>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {/* Filters */}
+        <Filters filters={filters} onFilterChange={setFilters} />
+
+        {/* Sankey Visualization */}
+        <SankeyVisualization users={filteredUsers} />
+
+        {/* Detailed Stats */}
+        <DetailedStats users={filteredUsers} />
+
+        {/* User Explorer */}
+        <UserExplorer users={filteredUsers} />
+      </div>
     </div>
   );
 }
