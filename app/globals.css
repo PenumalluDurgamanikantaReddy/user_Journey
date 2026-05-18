@@ -49,5 +49,75 @@ body {
   background: #3d4558;
 }
 
+/* Custom select dropdown styling */
+select {
+  scrollbar-width: thin;
+  scrollbar-color: #2d3548 #1a1f2e;
+}
+
+select::-webkit-scrollbar {
+  width: 8px;
+}
+
+select::-webkit-scrollbar-track {
+  background: #1a1f2e;
+}
+
+select::-webkit-scrollbar-thumb {
+  background: #2d3548;
+  border-radius: 4px;
+}
+
+select::-webkit-scrollbar-thumb:hover {
+  background: #3d4558;
+}
+
+/* Style select options */
+select option {
+  padding: 10px;
+  background-color: #1a1f2e;
+  color: #e5e7eb;
+  border-bottom: 1px solid #2d3548;
+  transition: background-color 0.2s;
+}
+
+select option:hover {
+  background-color: #2d3548;
+}
+
+select option:checked {
+  background-color: #3b82f6;
+  color: white;
+}
+
+select optgroup {
+  background-color: #1a1f2e;
+  color: #a78bfa;
+  font-weight: bold;
+  padding: 8px 4px;
+}
+
+/* Light theme select styling */
+.light select option {
+  background-color: #ffffff;
+  color: #1f2937;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.light select option:hover {
+  background-color: #f3f4f6;
+}
+
+.light select option:checked {
+  background-color: #3b82f6;
+  color: white;
+}
+
+.light select optgroup {
+  background-color: #f9fafb;
+  color: #6366f1;
+  font-weight: bold;
+}
+
 
 

@@ -25,81 +25,127 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
   }
 
   // Aggregate data with expansion support
-  const phase1Data = groupUsersByMedium(users, null); // Always show all categories in Phase 1
-  const expandedData = expandedCategory ? groupUsersByMedium(users, expandedCategory) : [];
+  const phase1Data = groupUsersByMedium(users, expandedCategory);
   const phase2Data = groupUsersByConversationType(users);
   const phase3Data = groupUsersByGoal(users);
 
-  // Calculate flows
-  let phase1to2Flows: any[] = [];
-  let phase2to3Flows: any[] = [];
-  
-  if (expandedCategory) {
-    // When expanded: Only the clicked category → Expanded items → Conversation
-    const categoryBox = phase1Data.find(b => b.label === expandedCategory);
-    if (categoryBox) {
-      phase1to2Flows = calculateFlowsBetweenPhases(
-        [categoryBox],
-        expandedData,
-        (user) => user.medium
-      );
+  // Calculate flows - same logic for both expanded and collapsed
+  const phase1to2Flows = calculateFlowsBetweenPhases(
+    phase1Data,
+    phase2Data,
+    (user) => {
+      if (user.conversationType) {
+        const conversationBox = phase2Data.find(box => 
+          box.label.toLowerCase() === user.conversationType?.toLowerCase() ||
+          box.label === 'Direct Messages' && user.conversationType === 'dm' ||
+          box.label === 'Comments' && user.conversationType === 'comments' ||
+          box.label === 'Courses' && user.conversationType === 'courses'
+        );
+        return conversationBox?.label;
+      }
+      return undefined;
     }
-    
-    phase2to3Flows = calculateFlowsBetweenPhases(
-      expandedData,
-      phase2Data,
-      (user) => user.conversationType
-    );
-  } else {
-    // When collapsed: All categories → Conversation
-    phase1to2Flows = calculateFlowsBetweenPhases(
-      phase1Data,
-      phase2Data,
-      (user) => user.conversationType
-    );
-    
-    phase2to3Flows = calculateFlowsBetweenPhases(
-      phase2Data,
-      phase3Data,
-      (user) => user.goal
-    );
-  }
+  );
+  
+  const phase2to3Flows = calculateFlowsBetweenPhases(
+    phase2Data,
+    phase3Data,
+    (user) => 'Church' // All users go to Church
+  );
 
-  // Position boxes
-  let phase1Boxes, phase2Boxes, phase3Boxes, totalHeight, totalWidth;
+  // Position boxes based on expansion state
+  let phase1Boxes: PhaseBox[];
+  let phase2Boxes: PhaseBox[];
+  let phase3Boxes: PhaseBox[];
   let phase4Boxes: PhaseBox[] = [];
+  let totalHeight: number;
+  let totalWidth: number;
   
   if (expandedCategory) {
-    // 4-column layout: Categories | Expanded | Conversation | Goal
-    const layout = positionPhaseBoxes(phase1Data, expandedData, phase2Data, phase3Data);
-    phase1Boxes = layout.phase1Boxes;
-    phase2Boxes = layout.phase2Boxes; // Expanded items
+    // 4-column layout: Expanded Platforms | All Content (including category) | Conversation | Goal
+    const allContentData = groupUsersByMedium(users, null); // Get all categories including the one being expanded
+    const layout = positionPhaseBoxes(phase1Data, allContentData, phase2Data, phase3Data);
+    phase1Boxes = layout.phase1Boxes; // Expanded platforms (Facebook, Instagram, Twitter)
+    phase2Boxes = layout.phase2Boxes; // All content boxes (Social Media, Ads, YouVersion, etc.)
     phase3Boxes = layout.phase3Boxes; // Conversation
     phase4Boxes = layout.phase4Boxes; // Goal
     totalHeight = layout.totalHeight;
     totalWidth = layout.totalWidth;
   } else {
-    // 3-column layout: Categories | Conversation | Goal
+    // 3-column layout: Content | Conversation | Goal
     const layout = positionPhaseBoxes(phase1Data, phase2Data, phase3Data);
     phase1Boxes = layout.phase1Boxes;
-    phase2Boxes = layout.phase2Boxes; // Conversation
-    phase3Boxes = layout.phase3Boxes; // Goal
+    phase2Boxes = layout.phase2Boxes;
+    phase3Boxes = layout.phase3Boxes;
+    phase4Boxes = [];
     totalHeight = layout.totalHeight;
     totalWidth = layout.totalWidth;
   }
 
   // Route bands
-  let phase1to2Bands, phase2to3Bands;
+  let phase1to2Bands: FlowBand[] = [];
+  let phase2to3Bands: FlowBand[] = [];
+  let phase3to4Bands: FlowBand[] = [];
   
   if (expandedCategory) {
-    phase1to2Bands = routeFlowBands(phase1Boxes, phase2Boxes, phase1to2Flows);
-    phase2to3Bands = routeFlowBands(phase2Boxes, phase3Boxes, phase2to3Flows);
+    // Expanded platforms → Category box
+    const categoryBox = phase2Boxes.find(b => b.label === expandedCategory);
+    if (categoryBox) {
+      phase1to2Bands = routeFlowBands(
+        phase1Boxes,
+        [categoryBox],
+        calculateFlowsBetweenPhases(
+          phase1Data,
+          [{ label: expandedCategory, count: categoryBox.count, percentage: categoryBox.percentage, color: categoryBox.color, users: categoryBox.users }],
+          (user) => expandedCategory
+        )
+      );
+    }
+    
+    // All content boxes → Conversation
+    phase2to3Bands = routeFlowBands(
+      phase2Boxes,
+      phase3Boxes,
+      calculateFlowsBetweenPhases(
+        groupUsersByMedium(users, null),
+        phase2Data,
+        (user) => {
+          if (user.conversationType) {
+            const conversationBox = phase2Data.find(box => 
+              box.label.toLowerCase() === user.conversationType?.toLowerCase() ||
+              box.label === 'Direct Messages' && user.conversationType === 'dm' ||
+              box.label === 'Comments' && user.conversationType === 'comments' ||
+              box.label === 'Courses' && user.conversationType === 'courses'
+            );
+            return conversationBox?.label;
+          }
+          return undefined;
+        }
+      )
+    );
+    
+    // Conversation → Goal
+    phase3to4Bands = routeFlowBands(
+      phase3Boxes,
+      phase4Boxes,
+      calculateFlowsBetweenPhases(
+        phase2Data,
+        phase3Data,
+        (user) => 'Church'
+      )
+    );
   } else {
-    phase1to2Bands = routeFlowBands(phase1Boxes, phase2Boxes, phase1to2Flows);
+    // Normal 3-column flow
+    phase1to2Bands = routeFlowBands(
+      phase1Boxes, 
+      phase2Boxes, 
+      phase1to2Flows
+    );
+    
     phase2to3Bands = routeFlowBands(phase2Boxes, phase3Boxes, phase2to3Flows);
   }
 
-  const allBands = [...phase1to2Bands, ...phase2to3Bands];
+  const allBands = [...phase1to2Bands, ...phase2to3Bands, ...phase3to4Bands];
 
   const handleBandHover = (band: FlowBand, event: React.MouseEvent) => {
     setHoveredBand(band.id);
@@ -226,7 +272,7 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
   };
 
   const renderBand = (band: FlowBand) => {
-    const allBoxes = expandedCategory 
+    const allBoxes = expandedCategory && phase4Boxes.length > 0
       ? [...phase1Boxes, ...phase2Boxes, ...phase3Boxes, ...phase4Boxes]
       : [...phase1Boxes, ...phase2Boxes, ...phase3Boxes];
     
@@ -272,22 +318,28 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
   };
 
   return (
-    <div className="bg-linear-to-b from-gray-50 to-white rounded-xl shadow-lg p-8">
+    <div className="bg-[#1a1f2e] light:bg-gradient-to-b light:from-gray-50 light:to-white rounded-xl shadow-lg p-8 mb-8 transition-colors duration-300">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 text-center flex-1">User Journey Flow</h2>
+        <h2 className="text-3xl font-bold text-gray-100 light:text-gray-900 text-center flex-1">User Journey Flow</h2>
         {expandedCategory && (
           <button
-            onClick={() => setExpandedCategory(null)}
+            onClick={() => {
+              if (!isTransitioning) {
+                setIsTransitioning(true);
+                setExpandedCategory(null);
+                setTimeout(() => setIsTransitioning(false), 500);
+              }
+            }}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
           >
             <span>←</span>
-            <span>Back to Categories</span>
+            <span>Collapse</span>
           </button>
         )}
       </div>
 
       {!expandedCategory && (
-        <p className="text-center text-gray-600 mb-4 text-sm">
+        <p className="text-center text-gray-400 light:text-gray-600 mb-4 text-sm">
           💡 Click on boxes with <span className="font-bold">+</span> to expand and see details
         </p>
       )}
@@ -295,58 +347,63 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
       <div className="relative overflow-x-auto">
         <svg width={totalWidth} height={totalHeight} className="mx-auto transition-all duration-500 ease-in-out">
           {/* Phase labels */}
-          <text x={phase1Boxes[0]?.x + 80} y={20} textAnchor="middle" fontSize="20" fontWeight="bold" fill="#374151">
-            📱 Content
-          </text>
           {expandedCategory ? (
             <>
-              <text 
-                x={phase2Boxes[0]?.x + 80} 
-                y={20} 
-                textAnchor="middle" 
-                fontSize="20" 
-                fontWeight="bold" 
-                fill="#374151"
-                className="transition-opacity duration-500"
-                opacity={isTransitioning ? 0 : 1}
-              >
+              <text x={phase1Boxes[0]?.x + 80} y={20} textAnchor="middle" fontSize="20" fontWeight="bold" fill="#9ca3af" className="light:fill-[#374151]">
                 {LABEL_MAP[expandedCategory] || expandedCategory}
               </text>
               <text 
+                x={phase2Boxes[0]?.x + 80} 
+                y={20} 
+                textAnchor="middle" 
+                fontSize="20" 
+                fontWeight="bold" 
+                fill="#9ca3af"
+                className="transition-opacity duration-500 light:fill-[#374151]"
+                opacity={isTransitioning ? 0 : 1}
+              >
+                📱 Content
+              </text>
+              <text 
                 x={phase3Boxes[0]?.x + 80} 
                 y={20} 
                 textAnchor="middle" 
                 fontSize="20" 
                 fontWeight="bold" 
-                fill="#374151"
-                className="transition-opacity duration-500"
+                fill="#9ca3af"
+                className="transition-opacity duration-500 light:fill-[#374151]"
                 opacity={isTransitioning ? 0 : 1}
               >
                 💬 Conversation
               </text>
-              <text 
-                x={phase4Boxes[0]?.x + 80} 
-                y={20} 
-                textAnchor="middle" 
-                fontSize="20" 
-                fontWeight="bold" 
-                fill="#374151"
-                className="transition-opacity duration-500"
-                opacity={isTransitioning ? 0 : 1}
-              >
-                ⛪ Goal
-              </text>
+              {phase4Boxes.length > 0 && (
+                <text 
+                  x={phase4Boxes[0]?.x + 80} 
+                  y={20} 
+                  textAnchor="middle" 
+                  fontSize="20" 
+                  fontWeight="bold" 
+                  fill="#9ca3af"
+                  className="transition-opacity duration-500 light:fill-[#374151]"
+                  opacity={isTransitioning ? 0 : 1}
+                >
+                  ⛪ Goal
+                </text>
+              )}
             </>
           ) : (
             <>
+              <text x={phase1Boxes[0]?.x + 80} y={20} textAnchor="middle" fontSize="20" fontWeight="bold" fill="#9ca3af" className="light:fill-[#374151]">
+                📱 Content
+              </text>
               <text 
                 x={phase2Boxes[0]?.x + 80} 
                 y={20} 
                 textAnchor="middle" 
                 fontSize="20" 
                 fontWeight="bold" 
-                fill="#374151"
-                className="transition-opacity duration-500"
+                fill="#9ca3af"
+                className="transition-opacity duration-500 light:fill-[#374151]"
                 opacity={isTransitioning ? 0 : 1}
               >
                 💬 Conversation
@@ -357,8 +414,8 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
                 textAnchor="middle" 
                 fontSize="20" 
                 fontWeight="bold" 
-                fill="#374151"
-                className="transition-opacity duration-500"
+                fill="#9ca3af"
+                className="transition-opacity duration-500 light:fill-[#374151]"
                 opacity={isTransitioning ? 0 : 1}
               >
                 ⛪ Goal
@@ -399,21 +456,21 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
 
       {/* Stats Summary */}
       <div className="mt-12 grid grid-cols-1 sm:grid-cols-3 gap-6">
-        <div className="bg-blue-50 rounded-lg p-6 text-center">
-          <p className="text-2xl font-bold text-blue-600">{users.length}</p>
-          <p className="text-gray-700 mt-1">Total Users</p>
+        <div className="bg-blue-500/10 light:bg-blue-50 rounded-lg p-6 text-center border border-blue-500/20 light:border-transparent transition-colors duration-300">
+          <p className="text-2xl font-bold text-blue-400 light:text-blue-600">{users.length}</p>
+          <p className="text-gray-300 light:text-gray-700 mt-1">Total Users</p>
         </div>
-        <div className="bg-purple-50 rounded-lg p-6 text-center">
-          <p className="text-2xl font-bold text-purple-600">
+        <div className="bg-purple-500/10 light:bg-purple-50 rounded-lg p-6 text-center border border-purple-500/20 light:border-transparent transition-colors duration-300">
+          <p className="text-2xl font-bold text-purple-400 light:text-purple-600">
             {Math.round((users.filter(u => u.status === 'active').length / users.length) * 100)}%
           </p>
-          <p className="text-gray-700 mt-1">Active Users</p>
+          <p className="text-gray-300 light:text-gray-700 mt-1">Active Users</p>
         </div>
-        <div className="bg-green-50 rounded-lg p-6 text-center">
-          <p className="text-2xl font-bold text-green-600">
+        <div className="bg-green-500/10 light:bg-green-50 rounded-lg p-6 text-center border border-green-500/20 light:border-transparent transition-colors duration-300">
+          <p className="text-2xl font-bold text-green-400 light:text-green-600">
             {Math.round((users.filter(u => u.goal === 'church').length / users.length) * 100)}%
           </p>
-          <p className="text-gray-700 mt-1">Reached Goal</p>
+          <p className="text-gray-300 light:text-gray-700 mt-1">Reached Goal</p>
         </div>
       </div>
     </div>

@@ -12,10 +12,11 @@ import { mockUsers, filterUsers, FilterState } from '@/app/data/mockData';
 
 function HomeContent() {
   const [filters, setFilters] = useState<FilterState>({
-    content: [],
+    countries: [],
     languages: [],
+    brands: [],
     phases: [],
-    statuses: [],
+    conversationTypes: [],
     dateRange: { start: '2024-01-01', end: '2024-12-31' }
   });
 

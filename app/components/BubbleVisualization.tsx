@@ -50,9 +50,8 @@ export default function BubbleVisualization({ users }: BubbleVisualizationProps)
     Object.entries(conversationGroups).filter(([_, items]) => items.length > 0)
   );
 
-  // Group by goal (Church column)
+  // Group by goal (Church column) - only church now
   const churchBoxes: Record<string, User[]> = {
-    conversation: users.filter(u => u.goal === 'conversation'),
     church: users.filter(u => u.goal === 'church'),
   };
 

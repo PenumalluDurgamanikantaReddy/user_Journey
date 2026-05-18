@@ -1,4 +1,4 @@
-import { User, Medium, ConversationType, Goal } from '@/app/data/mockData';
+import { User, Medium, ConversationType, Goal, getMediumLabel, getConversationLabel } from '@/app/data/mockData';
 import { COLOR_MAP } from '@/app/types/sankey';
 
 interface BoxData {
@@ -8,102 +8,140 @@ interface BoxData {
   color: string;
   users: User[];
   isExpandable?: boolean;
-  children?: string[];
+  children?: Medium[];
+  mediumType?: Medium;
 }
 
-// Define category groupings
-const CATEGORY_GROUPS: Record<string, Medium[]> = {
-  'social-media': ['facebook', 'instagram'],
-  'website': ['website'],
-  'ads': ['ads'],
-  'youversion': ['youversion'],
-  'ai': ['ai'],
-  'courses': ['courses'],
-};
+// Social media platforms that can be expanded
+const SOCIAL_MEDIA_PLATFORMS: Medium[] = ['facebook', 'instagram', 'twitter'];
+const ADS_PLATFORMS: Medium[] = ['google-ads', 'meta-ads'];
 
 export function groupUsersByMedium(users: User[], expandedCategory?: string | null): BoxData[] {
-  // If a category is expanded, show its children
-  if (expandedCategory && CATEGORY_GROUPS[expandedCategory]) {
-    const mediums = CATEGORY_GROUPS[expandedCategory];
-    const groups: Record<string, User[]> = {};
-    
-    mediums.forEach(medium => {
-      const filtered = users.filter(u => u.medium === medium);
-      if (filtered.length > 0) {
-        groups[medium] = filtered;
-      }
-    });
+  // Normalize the expanded category for comparison
+  const normalizedExpanded = expandedCategory?.toLowerCase().replace(/\s+/g, '-');
+  
+  // If "Social Media" is expanded, show individual platforms
+  if (normalizedExpanded === 'social-media') {
+    return SOCIAL_MEDIA_PLATFORMS.map(medium => {
+      const mediumUsers = users.filter(u => u.medium === medium);
+      return {
+        label: getMediumLabel(medium),
+        count: mediumUsers.length,
+        percentage: users.length > 0 ? (mediumUsers.length / users.length) * 100 : 0,
+        color: COLOR_MAP[medium] || '#6b7280',
+        users: mediumUsers,
+        isExpandable: false,
+        mediumType: medium,
+      };
+    }).filter(box => box.count > 0);
+  }
 
-    return Object.entries(groups).map(([label, items]) => ({
-      label,
-      count: items.length,
-      percentage: (items.length / users.length) * 100,
-      color: COLOR_MAP[label] || '#6b7280',
-      users: items,
-      isExpandable: false,
-    }));
+  // If "Ads" is expanded, show Google Ads and Meta Ads
+  if (normalizedExpanded === 'ads') {
+    return ADS_PLATFORMS.map(medium => {
+      const mediumUsers = users.filter(u => u.medium === medium);
+      return {
+        label: getMediumLabel(medium),
+        count: mediumUsers.length,
+        percentage: users.length > 0 ? (mediumUsers.length / users.length) * 100 : 0,
+        color: COLOR_MAP[medium] || '#6b7280',
+        users: mediumUsers,
+        isExpandable: false,
+        mediumType: medium,
+      };
+    }).filter(box => box.count > 0);
   }
 
   // Otherwise, show high-level categories
-  const categoryData: BoxData[] = [];
+  const boxes: BoxData[] = [];
 
-  Object.entries(CATEGORY_GROUPS).forEach(([category, mediums]) => {
-    const categoryUsers = users.filter(u => mediums.includes(u.medium));
-    if (categoryUsers.length > 0) {
-      categoryData.push({
-        label: category,
-        count: categoryUsers.length,
-        percentage: (categoryUsers.length / users.length) * 100,
-        color: COLOR_MAP[mediums[0]] || '#6b7280', // Use first medium's color
-        users: categoryUsers,
-        isExpandable: mediums.length > 1,
-        children: mediums,
+  // Social Media (grouped)
+  const socialMediaUsers = users.filter(u => SOCIAL_MEDIA_PLATFORMS.includes(u.medium));
+  if (socialMediaUsers.length > 0) {
+    boxes.push({
+      label: 'Social Media',
+      count: socialMediaUsers.length,
+      percentage: (socialMediaUsers.length / users.length) * 100,
+      color: COLOR_MAP['facebook'] || '#3b5998',
+      users: socialMediaUsers,
+      isExpandable: true,
+      children: SOCIAL_MEDIA_PLATFORMS,
+    });
+  }
+
+  // Ads (grouped)
+  const adsUsers = users.filter(u => ADS_PLATFORMS.includes(u.medium));
+  if (adsUsers.length > 0) {
+    boxes.push({
+      label: 'Ads',
+      count: adsUsers.length,
+      percentage: (adsUsers.length / users.length) * 100,
+      color: COLOR_MAP['google-ads'] || '#4285f4',
+      users: adsUsers,
+      isExpandable: true,
+      children: ADS_PLATFORMS,
+    });
+  }
+
+  // Individual platforms (not grouped)
+  const individualMediums: Medium[] = ['youversion', 'website', 'ai', 'courses'];
+  individualMediums.forEach(medium => {
+    const mediumUsers = users.filter(u => u.medium === medium);
+    if (mediumUsers.length > 0) {
+      boxes.push({
+        label: getMediumLabel(medium),
+        count: mediumUsers.length,
+        percentage: (mediumUsers.length / users.length) * 100,
+        color: COLOR_MAP[medium] || '#6b7280',
+        users: mediumUsers,
+        isExpandable: false,
+        mediumType: medium,
       });
     }
   });
 
-  return categoryData;
+  return boxes;
 }
 
 export function groupUsersByConversationType(users: User[]): BoxData[] {
-  const groups: Record<string, User[]> = {};
+  const groups: Record<ConversationType, User[]> = {
+    comments: [],
+    dm: [],
+    courses: [],
+  };
   
   users.forEach(user => {
-    if (!user.conversationType) return;
-    if (!groups[user.conversationType]) {
-      groups[user.conversationType] = [];
+    if (user.conversationType && groups[user.conversationType]) {
+      groups[user.conversationType].push(user);
     }
-    groups[user.conversationType].push(user);
   });
 
   const totalWithConversation = Object.values(groups).reduce((sum, items) => sum + items.length, 0);
 
   return Object.entries(groups)
     .filter(([_, items]) => items.length > 0)
-    .map(([label, items]) => ({
-      label,
+    .map(([type, items]) => ({
+      label: getConversationLabel(type as ConversationType),
       count: items.length,
       percentage: totalWithConversation > 0 ? (items.length / totalWithConversation) * 100 : 0,
-      color: COLOR_MAP[label] || '#6b7280',
+      color: COLOR_MAP[type] || '#6b7280',
       users: items,
     }));
 }
 
 export function groupUsersByGoal(users: User[]): BoxData[] {
-  const groups: Record<string, User[]> = {
-    conversation: users.filter(u => u.goal === 'conversation'),
-    church: users.filter(u => u.goal === 'church'),
-  };
+  // Only "Church" goal now
+  const churchUsers = users.filter(u => u.goal === 'church');
+  
+  if (churchUsers.length === 0) return [];
 
-  return Object.entries(groups)
-    .filter(([_, items]) => items.length > 0)
-    .map(([label, items]) => ({
-      label,
-      count: items.length,
-      percentage: (items.length / users.length) * 100,
-      color: COLOR_MAP[label] || '#6b7280',
-      users: items,
-    }));
+  return [{
+    label: 'Church',
+    count: churchUsers.length,
+    percentage: 100, // All users with goals go to church
+    color: COLOR_MAP['church'] || '#10b981',
+    users: churchUsers,
+  }];
 }
 
 interface FlowData {
