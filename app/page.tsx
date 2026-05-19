@@ -61,8 +61,7 @@ function HomeContent() {
                 <p className="text-xs text-gray-500 light:text-gray-500">in dataset</p>
               </div>
             </div>
-
-            <div className="group relative bg-gradient-to-br from-purple-500/10 to-purple-600/5 light:from-purple-50 light:to-purple-100 rounded-2xl shadow-xl border border-purple-500/20 light:border-purple-200 p-6 text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-purple-500/40">
+                  <div className="group relative bg-gradient-to-br from-purple-500/10 to-purple-600/5 light:from-purple-50 light:to-purple-100 rounded-2xl shadow-xl border border-purple-500/20 light:border-purple-200 p-6 text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-purple-500/40">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-600/0 group-hover:from-purple-500/5 group-hover:to-purple-600/10 rounded-2xl transition-all duration-300"></div>
               <div className="relative">
                 <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-purple-500/20 light:bg-purple-100 mb-3">
@@ -97,8 +96,8 @@ function HomeContent() {
         {/* Filters - Above Sankey */}
         <Filters filters={filters} onFilterChange={setFilters} />
 
-        {/* Interactive Map */}
-        <InteractiveMap users={filteredUsers} />
+        {/* Interactive Map - HIDDEN */}
+        {/* <InteractiveMap users={filteredUsers} /> */}
 
         {/* Sankey Visualization */}
         <SankeyVisualization users={filteredUsers} />

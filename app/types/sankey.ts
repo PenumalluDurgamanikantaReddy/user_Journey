@@ -46,16 +46,18 @@ export const COLOR_MAP: Record<string, string> = {
   facebook: '#3b82f6',
   instagram: '#ec4899',
   twitter: '#1da1f2',
-  'google-ads': '#4285f4',
+  'google-ads': '#f34aff',
   'meta-ads': '#0668e1',
   youversion: '#8b5cf6',
   website: '#10b981',
   ai: '#06b6d4',
-  courses: '#ef4444',
+  'daily-devotionals': '#ef4444',
   
-  // Phase 1 - Categories (grouped)
-  'social-media': '#3b82f6',
-  'ads': '#4285f4',
+  // Phase 1 - Categories (grouped) - Different colors for Social Media and Ads
+  'social-media': '#3b82f6',  // Blue for Social Media
+  'Social Media': '#3b82f6',
+  'ads': '#f59e0b',  // Orange for Ads
+  'Ads': '#f59e0b',
   
   // Phase 2 - Conversation types
   comments: '#60a5fa',
@@ -75,7 +77,7 @@ export const LABEL_MAP: Record<string, string> = {
   'ads': 'Ads',
   'youversion': 'YouVersion',
   'ai': 'AI',
-  'courses': 'Courses',
+  'daily-devotionals': 'Daily Devotionals',
   'facebook': 'Facebook',
   'instagram': 'Instagram',
   'twitter': 'Twitter',

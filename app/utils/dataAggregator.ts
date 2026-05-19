@@ -84,7 +84,7 @@ export function groupUsersByMedium(users: User[], expandedCategory?: string | nu
   }
 
   // Individual platforms (not grouped)
-  const individualMediums: Medium[] = ['youversion', 'website', 'ai', 'courses'];
+  const individualMediums: Medium[] = ['youversion', 'website', 'ai', 'daily-devotionals'];
   individualMediums.forEach(medium => {
     const mediumUsers = users.filter(u => u.medium === medium);
     if (mediumUsers.length > 0) {

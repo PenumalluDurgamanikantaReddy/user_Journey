@@ -1,4 +1,4 @@
-export type Medium = 'facebook' | 'instagram' | 'twitter' | 'google-ads' | 'meta-ads' | 'youversion' | 'website' | 'ai' | 'courses';
+export type Medium = 'facebook' | 'instagram' | 'twitter' | 'google-ads' | 'meta-ads' | 'youversion' | 'website' | 'ai' | 'daily-devotionals';
 export type Phase = 'evangelism' | 'discipleship' | 'leadership';
 export type ConversationType = 'comments' | 'dm' | 'courses';
 export type Goal = 'church';
@@ -55,10 +55,37 @@ export const mockUsers: User[] = [
   { id: '12', name: 'Sofia Rossi', email: 'sofia@example.com', medium: 'ai', conversationType: 'comments', language: 'Italian', brand: 'Search4Truth', country: 'USA', date: '2024-03-25', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 72 },
   { id: '13', name: 'David Kumar', email: 'david@example.com', medium: 'ai', conversationType: 'dm', language: 'Hindi', brand: 'Biblword', country: 'India', date: '2024-04-01', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 95 },
   
-  // Courses
-  { id: '14', name: 'Anna Mueller', email: 'anna@example.com', medium: 'courses', conversationType: 'courses', language: 'German', brand: 'SheRises', country: 'Germany', date: '2024-04-05', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 91 },
-  { id: '15', name: 'Paulo Santos', email: 'paulo@example.com', medium: 'courses', conversationType: 'courses', language: 'Portuguese', brand: 'Biblword', country: 'Brazil', date: '2024-04-10', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 93 },
-  { id: '20', name: 'Kate Johnson', email: 'kate@example.com', medium: 'courses', conversationType: 'courses', language: 'English', brand: 'SheRises', country: 'Australia', date: '2024-04-12', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 89 },
+  // Daily Devotionals - ensuring all 3 conversation types
+  { id: '14', name: 'Anna Mueller', email: 'anna@example.com', medium: 'daily-devotionals', conversationType: 'courses', language: 'German', brand: 'SheRises', country: 'Germany', date: '2024-04-05', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 91 },
+  { id: '15', name: 'Paulo Santos', email: 'paulo@example.com', medium: 'daily-devotionals', conversationType: 'courses', language: 'Portuguese', brand: 'Biblword', country: 'Brazil', date: '2024-04-10', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 93 },
+  { id: '20', name: 'Kate Johnson', email: 'kate@example.com', medium: 'daily-devotionals', conversationType: 'courses', language: 'English', brand: 'SheRises', country: 'Australia', date: '2024-04-12', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 89 },
+  { id: '21', name: 'Mark Davis', email: 'mark@example.com', medium: 'daily-devotionals', conversationType: 'comments', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-04-13', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 76 },
+  { id: '22', name: 'Nina Lopez', email: 'nina@example.com', medium: 'daily-devotionals', conversationType: 'dm', language: 'Spanish', brand: 'SheRises', country: 'Spain', date: '2024-04-14', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 84 },
+  
+  // Adding courses conversation type to other mediums
+  // Facebook with courses
+  { id: '23', name: 'Robert Lee', email: 'robert@example.com', medium: 'facebook', conversationType: 'courses', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-04-15', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 81 },
+  
+  // Instagram with courses
+  { id: '24', name: 'Elena Popov', email: 'elena@example.com', medium: 'instagram', conversationType: 'courses', language: 'English', brand: 'SheRises', country: 'UK', date: '2024-04-16', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 87 },
+  
+  // Twitter with courses
+  { id: '25', name: 'Omar Hassan', email: 'omar@example.com', medium: 'twitter', conversationType: 'courses', language: 'Arabic', brand: 'AlKitab', country: 'USA', date: '2024-04-17', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 73 },
+  
+  // Google Ads with courses
+  { id: '26', name: 'Julia Martinez', email: 'julia@example.com', medium: 'google-ads', conversationType: 'courses', language: 'Spanish', brand: 'Biblword', country: 'Spain', date: '2024-04-18', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 69 },
+  
+  // Meta Ads with courses
+  { id: '27', name: 'Wei Zhang', email: 'wei@example.com', medium: 'meta-ads', conversationType: 'courses', language: 'Chinese', brand: 'Search4Truth', country: 'China', date: '2024-04-19', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 78 },
+  
+  // YouVersion with courses
+  { id: '28', name: 'Isabella Costa', email: 'isabella@example.com', medium: 'youversion', conversationType: 'courses', language: 'Portuguese', brand: 'Biblword', country: 'Brazil', date: '2024-04-20', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 94 },
+  
+  // Website with courses
+  { id: '29', name: 'Alex Turner', email: 'alex@example.com', medium: 'website', conversationType: 'courses', language: 'English', brand: 'Search4Truth', country: 'Australia', date: '2024-04-21', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 80 },
+  
+  // AI Chat with courses
+  { id: '30', name: 'Fatima Ahmed', email: 'fatima@example.com', medium: 'ai', conversationType: 'courses', language: 'Arabic', brand: 'AlKitab', country: 'USA', date: '2024-04-22', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 71 },
 ];
 
 export interface FilterState {
@@ -86,7 +113,7 @@ export const getMediumLabel = (medium: Medium): string => {
     youversion: 'YouVersion',
     website: 'Website',
     ai: 'AI Chat',
-    courses: 'Courses'
+    'daily-devotionals': 'Daily Devotionals'
   };
   return labels[medium];
 };

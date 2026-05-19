@@ -8,7 +8,7 @@ interface FiltersProps {
 }
 
 // Content sources for the Brand/Content filter
-const CONTENT_SOURCES: Medium[] = ['facebook', 'instagram', 'twitter', 'google-ads', 'meta-ads', 'youversion', 'website', 'ai', 'courses'];
+const CONTENT_SOURCES: Medium[] = ['facebook', 'instagram', 'twitter', 'google-ads', 'meta-ads', 'youversion', 'website', 'ai', 'daily-devotionals'];
 
 export default function Filters({ filters, onFilterChange }: FiltersProps) {
   const handleCountryToggle = (country: Country) => {
