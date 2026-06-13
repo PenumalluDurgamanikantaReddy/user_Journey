@@ -104,6 +104,25 @@ select optgroup {
   border-bottom: 1px solid #e5e7eb;
 }
 
+@keyframes flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
+@keyframes flow-fast {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -44;
+  }
+}
+
+
 .light select option:hover {
   background-color: #f3f4f6;
 }

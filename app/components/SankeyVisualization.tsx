@@ -292,9 +292,12 @@ export default function SankeyVisualization({ users }: SankeyVisualizationProps)
         <path
           d={path}
           stroke={band.color}
-          strokeWidth={Math.max(2, band.count * 3)}
+          strokeWidth={Math.max(2, band.count *1)} // Adjust thickness based on count
           fill="none"
-          opacity={isHovered ? 0.8 : 0.4}
+          strokeLinecap="round"
+          strokeDasharray="16 12"
+          opacity={isHovered ? 0.85 : 0.45}
+          style={{ animation: `${isHovered ? 'flow-fast' : 'flow'} 1s linear infinite` }}
           className="transition-all duration-300 cursor-pointer"
           onMouseEnter={(e) => handleBandHover(band, e)}
           onMouseLeave={handleBandLeave}

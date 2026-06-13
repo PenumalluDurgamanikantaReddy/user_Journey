@@ -140,7 +140,7 @@ export const filterUsers = (users: User[], filters: FilterState): User[] => {
   return users.filter(user => {
     const countryMatch = filters.countries.length === 0 || filters.countries.includes(user.country);
     const languageMatch = filters.languages.length === 0 || filters.languages.includes(user.language);
-    const brandMatch = filters.brands.length === 0 || filters.brands.includes(user.brand);
+    const brandMatch = filters.brands.length === 0 || filters.brands.some(filterValue => filterValue === user.brand || filterValue === user.medium);
     const phaseMatch = filters.phases.length === 0 || filters.phases.includes(user.phase);
     const conversationMatch = filters.conversationTypes.length === 0 || (user.conversationType && filters.conversationTypes.includes(user.conversationType));
     const dateMatch = new Date(user.date) >= new Date(filters.dateRange.start) && new Date(user.date) <= new Date(filters.dateRange.end);
