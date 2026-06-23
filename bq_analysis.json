@@ -1,0 +1,908 @@
+{
+  "schema": [
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Date",
+      "data_type": "DATE"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Username",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Name",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Page_language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Platform",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Profile_Reach",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Profile_Impressions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Profile_Views",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Followers",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Current_Follows",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_profile_and_follower_metrics",
+      "column_name": "Weekly_follower_growth",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Date",
+      "data_type": "DATE"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Username",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Name",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Current_Followers",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Current_Follows",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Page_language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Platform",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_follower_metrics_2",
+      "column_name": "Weekly_follower_growth",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Language_Code",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Month",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Subscriptions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Completions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Average_Overall_Ratings",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Average_Completion_Rate",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Month_nr",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "youversion_combined_language_statistics",
+      "column_name": "Year",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Date",
+      "data_type": "DATE"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Username",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Name",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Media_ID",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Engagement_type",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Engagements",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Page_language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_engagement_metrics",
+      "column_name": "Platform",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Date",
+      "data_type": "DATE"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Stream_name",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Source",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Medium",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Author",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Page_path",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Page_title",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Users",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Sessions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Total_events",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Platform",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Classification",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "analytics_biblword_articles_combined",
+      "column_name": "Journey_user_phase",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "Type",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "Referrer",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "Outcome_Title",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "Date",
+      "data_type": "TIMESTAMP"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "Closed_At",
+      "data_type": "TIMESTAMP"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "ID",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "echo_chat_statistics_combined",
+      "column_name": "Language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Date",
+      "data_type": "DATE"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Account",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Campaign",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Country_Territory",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Cost",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Impressions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Clicks",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Complete_Registration",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Start_course",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Assigned_mentor",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Complete_course",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Campaign_type",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Campaign_language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Campaign_gender",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Campaign_course",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "google_ads_combined_conversions",
+      "column_name": "Platform",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Date",
+      "data_type": "DATE"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_created_date",
+      "data_type": "TIMESTAMP"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Username",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Name",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_ID",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_type",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Post_type",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_permalink",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_count",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_reach",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_impressions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_likes",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_comments",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_shares",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_unique_saves",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_follows",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_total_interactions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Media_engagement_rate",
+      "data_type": "FLOAT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_reach",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_total_plays",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_total_interactions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_likes",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_comments",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_saved_times",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Reel_shared_times",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Story_reach",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Story_impressions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Story_follows",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Story_profile_visits",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Story_shares",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Story_total_interactions",
+      "data_type": "INT64"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Page_language",
+      "data_type": "STRING"
+    },
+    {
+      "table_name": "instagram_insights_combined_post_metrics",
+      "column_name": "Platform",
+      "data_type": "STRING"
+    }
+  ],
+  "sample_youversion_combined_language_statistics": [
+    {
+      "Language": "-Unknown-",
+      "Language_Code": "-Unknown-",
+      "Month": "1/2023",
+      "Subscriptions": 4524,
+      "Completions": 48,
+      "Average_Overall_Ratings": 0,
+      "Average_Completion_Rate": 0.010610079575596816,
+      "Month_nr": 1,
+      "Year": 2023
+    },
+    {
+      "Language": "-Unknown-",
+      "Language_Code": "-Unknown-",
+      "Month": "2/2023",
+      "Subscriptions": 4535,
+      "Completions": 42,
+      "Average_Overall_Ratings": 0,
+      "Average_Completion_Rate": 0.00926130099228225,
+      "Month_nr": 2,
+      "Year": 2023
+    },
+    {
+      "Language": "-Unknown-",
+      "Language_Code": "-Unknown-",
+      "Month": "2/2024",
+      "Subscriptions": 0,
+      "Completions": 0,
+      "Average_Overall_Ratings": 4.71,
+      "Average_Completion_Rate": 0,
+      "Month_nr": 2,
+      "Year": 2024
+    }
+  ],
+  "sample_analytics_biblword_articles_combined": [
+    {
+      "Date": "2024-05-14",
+      "Stream_name": "English",
+      "Source": "google",
+      "Medium": "cpc",
+      "Author": "GRIETJE COMMELIN",
+      "Page_path": "/10-bible-quotes-about-grief-and-sorrow/",
+      "Page_title": "10 Bible quotes about grief and sorrow - Biblword.net",
+      "Users": 13,
+      "Sessions": 17,
+      "Total_events": 30,
+      "Platform": "Biblword",
+      "Classification": "d",
+      "Journey_user_phase": "Disciple"
+    },
+    {
+      "Date": "2023-04-06",
+      "Stream_name": "English",
+      "Source": "google",
+      "Medium": "cpc",
+      "Author": "GRIETJE COMMELIN",
+      "Page_path": "/10-bible-quotes-about-grief-and-sorrow/",
+      "Page_title": "10 Bible quotes about grief and sorrow - Biblword.net",
+      "Users": 21,
+      "Sessions": 23,
+      "Total_events": 23,
+      "Platform": "Biblword",
+      "Classification": "d",
+      "Journey_user_phase": "Disciple"
+    },
+    {
+      "Date": "2023-09-16",
+      "Stream_name": "English",
+      "Source": "google",
+      "Medium": "cpc",
+      "Author": "GRIETJE COMMELIN",
+      "Page_path": "/10-bible-quotes-about-grief-and-sorrow/",
+      "Page_title": "10 Bible quotes about grief and sorrow - Biblword.net",
+      "Users": 13,
+      "Sessions": 14,
+      "Total_events": 15,
+      "Platform": "Biblword",
+      "Classification": "d",
+      "Journey_user_phase": "Disciple"
+    }
+  ],
+  "sample_echo_chat_statistics_combined": [
+    {
+      "Type": "Instagram",
+      "Referrer": "Al Wujud",
+      "Outcome_Title": null,
+      "Date": "1.729193725E9",
+      "Closed_At": null,
+      "ID": 23007524,
+      "Language": "English"
+    },
+    {
+      "Type": "Instagram",
+      "Referrer": "Al Wujud",
+      "Outcome_Title": null,
+      "Date": "1.731663379E9",
+      "Closed_At": null,
+      "ID": 23535624,
+      "Language": "English"
+    },
+    {
+      "Type": "Instagram",
+      "Referrer": "Al Wujud",
+      "Outcome_Title": null,
+      "Date": "1.730195572E9",
+      "Closed_At": null,
+      "ID": 23231907,
+      "Language": "English"
+    }
+  ],
+  "sample_google_ads_combined_conversions": [
+    {
+      "Date": "2025-02-09",
+      "Account": "Learnnn",
+      "Campaign": "PM - Learnnn - Arabic",
+      "Country_Territory": "Algeria",
+      "Cost": 1.62,
+      "Impressions": 2391,
+      "Clicks": 95,
+      "Complete_Registration": 6.33,
+      "Start_course": 4.33,
+      "Assigned_mentor": 0,
+      "Complete_course": 0,
+      "Campaign_type": "Course",
+      "Campaign_language": "Arabic",
+      "Campaign_gender": "Mix",
+      "Campaign_course": "Other",
+      "Platform": "Google Ads"
+    },
+    {
+      "Date": "2025-01-27",
+      "Account": "Learnnn",
+      "Campaign": "PM - Learnnn - Arabic",
+      "Country_Territory": "Algeria",
+      "Cost": 1.78,
+      "Impressions": 4804,
+      "Clicks": 82,
+      "Complete_Registration": 2,
+      "Start_course": 2,
+      "Assigned_mentor": 0,
+      "Complete_course": 0,
+      "Campaign_type": "Course",
+      "Campaign_language": "Arabic",
+      "Campaign_gender": "Mix",
+      "Campaign_course": "Other",
+      "Platform": "Google Ads"
+    },
+    {
+      "Date": "2025-02-22",
+      "Account": "Learnnn",
+      "Campaign": "PM - Learnnn - Arabic",
+      "Country_Territory": "Algeria",
+      "Cost": 2.03,
+      "Impressions": 3111,
+      "Clicks": 109,
+      "Complete_Registration": 4,
+      "Start_course": 4,
+      "Assigned_mentor": 1,
+      "Complete_course": 0,
+      "Campaign_type": "Course",
+      "Campaign_language": "Arabic",
+      "Campaign_gender": "Mix",
+      "Campaign_course": "Other",
+      "Platform": "Google Ads"
+    }
+  ],
+  "sample_instagram_insights_combined_engagement_metrics": [
+    {
+      "Date": "2023-11-10",
+      "Username": "_she_rises_",
+      "Name": "She Rises",
+      "Media_ID": 17842196361105536,
+      "Engagement_type": "Shares",
+      "Engagements": 105,
+      "Page_language": "English",
+      "Platform": "Instagram"
+    },
+    {
+      "Date": "2023-11-10",
+      "Username": "_she_rises_",
+      "Name": "She Rises",
+      "Media_ID": 17842196361105536,
+      "Engagement_type": "Comments",
+      "Engagements": 29,
+      "Page_language": "English",
+      "Platform": "Instagram"
+    },
+    {
+      "Date": "2023-11-10",
+      "Username": "_she_rises_",
+      "Name": "She Rises",
+      "Media_ID": 17842196361105536,
+      "Engagement_type": "Likes",
+      "Engagements": 2843,
+      "Page_language": "English",
+      "Platform": "Instagram"
+    }
+  ],
+  "sample_instagram_insights_combined_follower_metrics_2": [
+    {
+      "Date": "2024-09-16",
+      "Username": "al_kitaab24",
+      "Name": "alkitaab",
+      "Current_Followers": 9,
+      "Current_Follows": 0,
+      "Page_language": "English",
+      "Platform": "Instagram",
+      "Weekly_follower_growth": 0
+    },
+    {
+      "Date": "2024-07-29",
+      "Username": "al_kitaab24",
+      "Name": "alkitaab",
+      "Current_Followers": 5,
+      "Current_Follows": 0,
+      "Page_language": "English",
+      "Platform": "Instagram",
+      "Weekly_follower_growth": 0
+    },
+    {
+      "Date": "2024-08-26",
+      "Username": "al_kitaab24",
+      "Name": "alkitaab",
+      "Current_Followers": 6,
+      "Current_Follows": 0,
+      "Page_language": "English",
+      "Platform": "Instagram",
+      "Weekly_follower_growth": 1
+    }
+  ],
+  "sample_instagram_insights_combined_post_metrics": [
+    {
+      "Date": "2025-03-14",
+      "Media_created_date": "1.7419572E9",
+      "Username": "al_kitaab25",
+      "Name": "Al-Kitaab",
+      "Media_ID": 18058962527008670,
+      "Media_type": "CAROUSEL_ALBUM",
+      "Post_type": "Carousel",
+      "Media_permalink": "https://www.instagram.com/p/DHLdHdNBqWY/",
+      "Media_count": 1,
+      "Media_reach": 4,
+      "Media_impressions": 6,
+      "Media_likes": 0,
+      "Media_comments": 0,
+      "Media_shares": 0,
+      "Media_unique_saves": 0,
+      "Media_follows": 0,
+      "Media_total_interactions": 0,
+      "Media_engagement_rate": 0,
+      "Reel_reach": 0,
+      "Reel_total_plays": 0,
+      "Reel_total_interactions": 0,
+      "Reel_likes": 0,
+      "Reel_comments": 0,
+      "Reel_saved_times": 0,
+      "Reel_shared_times": 0,
+      "Story_reach": 0,
+      "Story_impressions": 0,
+      "Story_follows": 0,
+      "Story_profile_visits": 0,
+      "Story_shares": 0,
+      "Story_total_interactions": 0,
+      "Page_language": "English",
+      "Platform": "Instagram"
+    },
+    {
+      "Date": "2024-11-25",
+      "Media_created_date": "1.7325072E9",
+      "Username": "al_kitaab_ru",
+      "Name": "Кітапكتاب",
+      "Media_ID": 18031388363125492,
+      "Media_type": "CAROUSEL_ALBUM",
+      "Post_type": "Carousel",
+      "Media_permalink": "https://www.instagram.com/p/DCx7gRDhvg2/",
+      "Media_count": 1,
+      "Media_reach": 38,
+      "Media_impressions": 46,
+      "Media_likes": 2,
+      "Media_comments": 1,
+      "Media_shares": 0,
+      "Media_unique_saves": 0,
+      "Media_follows": 0,
+      "Media_total_interactions": 3,
+      "Media_engagement_rate": 6.52,
+      "Reel_reach": 0,
+      "Reel_total_plays": 0,
+      "Reel_total_interactions": 0,
+      "Reel_likes": 0,
+      "Reel_comments": 0,
+      "Reel_saved_times": 0,
+      "Reel_shared_times": 0,
+      "Story_reach": 0,
+      "Story_impressions": 0,
+      "Story_follows": 0,
+      "Story_profile_visits": 0,
+      "Story_shares": 0,
+      "Story_total_interactions": 0,
+      "Page_language": "Russian",
+      "Platform": "Instagram"
+    },
+    {
+      "Date": "2025-12-12",
+      "Media_created_date": "1.76552622E9",
+      "Username": "globalrize",
+      "Name": "GlobalRize",
+      "Media_ID": 18108789040712892,
+      "Media_type": "CAROUSEL_ALBUM",
+      "Post_type": "Carousel",
+      "Media_permalink": "https://www.instagram.com/p/DSJ3eyagpul/",
+      "Media_count": 1,
+      "Media_reach": 1303,
+      "Media_impressions": 1806,
+      "Media_likes": 4,
+      "Media_comments": 0,
+      "Media_shares": 0,
+      "Media_unique_saves": 0,
+      "Media_follows": 0,
+      "Media_total_interactions": 6,
+      "Media_engagement_rate": 0.33,
+      "Reel_reach": 0,
+      "Reel_total_plays": 0,
+      "Reel_total_interactions": 0,
+      "Reel_likes": 0,
+      "Reel_comments": 0,
+      "Reel_saved_times": 0,
+      "Reel_shared_times": 0,
+      "Story_reach": 0,
+      "Story_impressions": 0,
+      "Story_follows": 0,
+      "Story_profile_visits": 0,
+      "Story_shares": 0,
+      "Story_total_interactions": 0,
+      "Page_language": "Dutch",
+      "Platform": "Instagram"
+    }
+  ],
+  "sample_instagram_insights_combined_profile_and_follower_metrics": [
+    {
+      "Date": "2024-01-28",
+      "Username": "50daysministry",
+      "Name": "Hayo de Vries",
+      "Page_language": "English",
+      "Platform": "Instagram",
+      "Profile_Reach": 0,
+      "Profile_Impressions": 0,
+      "Profile_Views": 8,
+      "Followers": null,
+      "Current_Follows": null,
+      "Weekly_follower_growth": null
+    },
+    {
+      "Date": "2024-04-13",
+      "Username": "50daysministry",
+      "Name": "Hayo de Vries",
+      "Page_language": "English",
+      "Platform": "Instagram",
+      "Profile_Reach": 18,
+      "Profile_Impressions": 22,
+      "Profile_Views": 1,
+      "Followers": null,
+      "Current_Follows": null,
+      "Weekly_follower_growth": null
+    },
+    {
+      "Date": "2024-05-19",
+      "Username": "50daysministry",
+      "Name": "Hayo de Vries",
+      "Page_language": "English",
+      "Platform": "Instagram",
+      "Profile_Reach": 5,
+      "Profile_Impressions": 6,
+      "Profile_Views": 0,
+      "Followers": null,
+      "Current_Follows": null,
+      "Weekly_follower_growth": null
+    }
+  ]
+}

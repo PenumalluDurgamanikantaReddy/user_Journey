@@ -92,8 +92,10 @@ export interface FilterState {
   countries: Country[];
   languages: string[];
   brands: string[];
+  contentSources: Medium[];
   phases: Phase[];
   conversationTypes: ConversationType[];
+  goals: Goal[];
   dateRange: { start: string; end: string };
 }
 
@@ -102,6 +104,7 @@ export const LANGUAGES = ['English', 'Spanish', 'Arabic', 'Portuguese', 'Korean'
 export const PHASES: Phase[] = ['evangelism', 'discipleship', 'leadership'];
 export const CONVERSATION_TYPES: ConversationType[] = ['comments', 'dm', 'courses'];
 export const COUNTRIES: Country[] = ['USA', 'Brazil', 'India', 'UK', 'Germany', 'Spain', 'China', 'Japan', 'Australia'];
+export const GOALS: Goal[] = ['church'];
 
 export const getMediumLabel = (medium: Medium): string => {
   const labels: Record<Medium, string> = {
@@ -140,11 +143,13 @@ export const filterUsers = (users: User[], filters: FilterState): User[] => {
   return users.filter(user => {
     const countryMatch = filters.countries.length === 0 || filters.countries.includes(user.country);
     const languageMatch = filters.languages.length === 0 || filters.languages.includes(user.language);
-    const brandMatch = filters.brands.length === 0 || filters.brands.some(filterValue => filterValue === user.brand || filterValue === user.medium);
+    const brandMatch = filters.brands.length === 0 || filters.brands.includes(user.brand);
+    const contentSourceMatch = filters.contentSources.length === 0 || filters.contentSources.includes(user.medium);
     const phaseMatch = filters.phases.length === 0 || filters.phases.includes(user.phase);
     const conversationMatch = filters.conversationTypes.length === 0 || (user.conversationType && filters.conversationTypes.includes(user.conversationType));
+    const goalMatch = filters.goals.length === 0 || filters.goals.includes(user.goal);
     const dateMatch = new Date(user.date) >= new Date(filters.dateRange.start) && new Date(user.date) <= new Date(filters.dateRange.end);
     
-    return countryMatch && languageMatch && brandMatch && phaseMatch && conversationMatch && dateMatch;
+    return countryMatch && languageMatch && brandMatch && contentSourceMatch && phaseMatch && conversationMatch && goalMatch && dateMatch;
   });
 };

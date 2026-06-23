@@ -1,334 +1,247 @@
 'use client';
 
-import { FilterState, COUNTRIES, LANGUAGES, BRANDS, PHASES, CONVERSATION_TYPES, Country, Phase, ConversationType, Medium, getMediumLabel } from '@/app/data/mockData';
+import { FilterState, COUNTRIES, LANGUAGES, BRANDS, PHASES, CONVERSATION_TYPES, GOALS, Country, Phase, ConversationType, Medium, getMediumLabel, Goal } from '@/app/data/mockData';
 
 interface FiltersProps {
   filters: FilterState;
   onFilterChange: (filters: FilterState) => void;
 }
 
-// Content sources for the Brand/Content filter
 const CONTENT_SOURCES: Medium[] = ['facebook', 'instagram', 'twitter', 'google-ads', 'meta-ads', 'youversion', 'website', 'ai', 'daily-devotionals'];
 
 export default function Filters({ filters, onFilterChange }: FiltersProps) {
-  const handleCountryToggle = (country: Country) => {
-    const newCountries = filters.countries.includes(country)
-      ? filters.countries.filter(c => c !== country)
-      : [...filters.countries, country];
-    onFilterChange({ ...filters, countries: newCountries });
+  const toggleArrayItem = <T,>(arr: T[], item: T): T[] => {
+    return arr.includes(item) ? arr.filter(i => i !== item) : [...arr, item];
   };
 
-  const handleLanguageChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    onFilterChange({ ...filters, languages: value ? [value] : [] });
-  };
-
-  const handleBrandToggle = (item: string) => {
-    const newBrands = filters.brands.includes(item)
-      ? filters.brands.filter(b => b !== item)
-      : [...filters.brands, item];
-    onFilterChange({ ...filters, brands: newBrands });
-  };
-
-  const handlePhaseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    onFilterChange({ ...filters, phases: value ? [value as Phase] : [] });
-  };
-
-  const handleConversationToggle = (type: ConversationType) => {
-    const newTypes = filters.conversationTypes.includes(type)
-      ? filters.conversationTypes.filter(t => t !== type)
-      : [...filters.conversationTypes, type];
-    onFilterChange({ ...filters, conversationTypes: newTypes });
-  };
+  const handleCountryToggle = (country: Country) => onFilterChange({ ...filters, countries: toggleArrayItem(filters.countries, country) });
+  const handleLanguageToggle = (language: string) => onFilterChange({ ...filters, languages: toggleArrayItem(filters.languages, language) });
+  const handleBrandToggle = (brand: string) => onFilterChange({ ...filters, brands: toggleArrayItem(filters.brands, brand) });
+  const handlePhaseToggle = (phase: Phase) => onFilterChange({ ...filters, phases: toggleArrayItem(filters.phases, phase) });
+  
+  const handleContentToggle = (content: Medium) => onFilterChange({ ...filters, contentSources: toggleArrayItem(filters.contentSources, content) });
+  const handleConversationToggle = (type: ConversationType) => onFilterChange({ ...filters, conversationTypes: toggleArrayItem(filters.conversationTypes, type) });
+  const handleGoalToggle = (goal: Goal) => onFilterChange({ ...filters, goals: toggleArrayItem(filters.goals, goal) });
 
   const handleReset = () => {
     onFilterChange({
       countries: [],
       languages: [],
       brands: [],
+      contentSources: [],
       phases: [],
       conversationTypes: [],
-      dateRange: filters.dateRange // Keep date range unchanged
+      goals: [],
+      dateRange: filters.dateRange
     });
-  };
-
-  // Get display label for brand/content items
-  const getBrandLabel = (item: string): string => {
-    // Check if it's a medium (content source)
-    if (CONTENT_SOURCES.includes(item as Medium)) {
-      return getMediumLabel(item as Medium);
-    }
-    // Otherwise it's a brand
-    return item;
   };
 
   return (
     <div className="bg-gradient-to-r from-[#1a1f2e] to-[#1e2433] light:from-white light:to-gray-50 rounded-2xl shadow-2xl border border-[#2d3548]/50 light:border-gray-200 p-6 mb-8 transition-all duration-300">
-      <div className="flex flex-wrap items-start gap-6">
-        {/* Country - Multi-select */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-gray-400 light:text-gray-600 uppercase tracking-wider">Country</label>
-          <div className="relative">
-            <div className="min-w-[180px] px-4 py-2.5 pr-10 text-sm border-2 border-[#2d3548] light:border-gray-300 rounded-xl bg-[#0f1419] light:bg-white transition-all duration-200 hover:border-blue-500/50 shadow-lg cursor-pointer">
-              <div className="flex flex-wrap gap-1 min-h-[24px]">
-                {filters.countries.length === 0 ? (
-                  <span className="text-gray-500 light:text-gray-400">All Countries</span>
-                ) : (
-                  filters.countries.map(country => (
-                    <span key={country} className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/20 light:bg-blue-100 text-blue-300 light:text-blue-700 rounded text-xs font-medium">
-                      {country}
-                      <button 
-                        type="button"
-                        onClick={(e) => { 
-                          e.preventDefault();
-                          e.stopPropagation(); 
-                          handleCountryToggle(country); 
-                        }} 
-                        className="ml-1 hover:text-blue-100 light:hover:text-blue-900 font-bold text-base leading-none"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))
-                )}
-              </div>
-            </div>
-            {/* Dropdown arrow indicator */}
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            <select
-              onChange={(e) => { if (e.target.value) handleCountryToggle(e.target.value as Country); e.target.value = ''; }}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              style={{
-                color: '#fff',
-                backgroundColor: '#0f1419',
-              }}
-            >
-              <option value="" style={{ backgroundColor: '#1a1f2e', color: '#9ca3af', padding: '8px' }}>Select Country...</option>
-              {COUNTRIES.map(country => (
-                <option 
-                  key={country} 
-                  value={country}
-                  style={{ 
-                    backgroundColor: '#1a1f2e', 
-                    color: '#e5e7eb',
-                    padding: '8px',
-                    borderBottom: '1px solid #2d3548'
-                  }}
-                >
-                  {country}
-                </option>
+      
+      <div className="flex justify-between items-center mb-6 border-b border-gray-700/50 pb-4">
+        <h2 className="text-xl font-bold text-gray-100">Filters</h2>
+        <button
+          onClick={handleReset}
+          className="px-4 py-2 text-sm font-semibold text-gray-300 bg-red-500/10 hover:bg-red-500/20 border-red-500/30 border rounded-lg transition-all"
+        >
+          Reset Filters
+        </button>
+      </div>
+
+      {/* Platform Filters */}
+      <div className="mb-8">
+        <h3 className="text-lg font-semibold text-gray-300 mb-4 border-l-4 border-blue-500 pl-3">Platform Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Content */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Content</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {CONTENT_SOURCES.map(source => (
+                <label key={source} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-blue-500 checked:border-blue-500 transition-all cursor-pointer"
+                      checked={filters.contentSources.includes(source)}
+                      onChange={() => handleContentToggle(source)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{getMediumLabel(source)}</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
-        </div>
 
-        {/* Language */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-gray-400 light:text-gray-600 uppercase tracking-wider">Language</label>
-          <select
-            value={filters.languages[0] || ''}
-            onChange={handleLanguageChange}
-            className="appearance-none px-4 py-2.5 text-sm border-2 border-[#2d3548] light:border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[#0f1419] light:bg-white text-gray-200 light:text-gray-900 min-w-[140px] transition-all duration-200 cursor-pointer hover:border-blue-500/50 font-medium shadow-lg"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 0.5rem center',
-              backgroundSize: '1.5em 1.5em',
-              paddingRight: '2.5rem'
-            }}
-          >
-            <option value="">All Languages</option>
-            {LANGUAGES.map(language => (
-              <option key={language} value={language}>{language}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Brand/Content - Multi-select */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-gray-400 light:text-gray-600 uppercase tracking-wider">Brand/Content</label>
-          <div className="relative">
-            <div className="min-w-[200px] max-w-[250px] px-4 py-2.5 pr-10 text-sm border-2 border-[#2d3548] light:border-gray-300 rounded-xl bg-[#0f1419] light:bg-white transition-all duration-200 hover:border-blue-500/50 shadow-lg cursor-pointer">
-              <div className="flex flex-wrap gap-1 min-h-[24px]">
-                {filters.brands.length === 0 ? (
-                  <span className="text-gray-500 light:text-gray-400">All Brands/Content</span>
-                ) : (
-                  filters.brands.map(item => (
-                    <span key={item} className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-500/20 light:bg-purple-100 text-purple-300 light:text-purple-700 rounded text-xs font-medium">
-                      {getBrandLabel(item)}
-                      <button 
-                        type="button"
-                        onClick={(e) => { 
-                          e.preventDefault();
-                          e.stopPropagation(); 
-                          handleBrandToggle(item); 
-                        }} 
-                        className="ml-1 hover:text-purple-100 light:hover:text-purple-900 font-bold text-base leading-none"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))
-                )}
-              </div>
-            </div>
-            {/* Dropdown arrow indicator */}
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            <select
-              onChange={(e) => { if (e.target.value) handleBrandToggle(e.target.value); e.target.value = ''; }}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              style={{
-                color: '#fff',
-                backgroundColor: '#0f1419',
-              }}
-            >
-              <option value="" style={{ backgroundColor: '#1a1f2e', color: '#9ca3af', padding: '8px' }}>Select Brand/Content...</option>
-              <optgroup label="Brands" style={{ backgroundColor: '#1a1f2e', color: '#a78bfa', fontWeight: 'bold', padding: '4px' }}>
-                {BRANDS.map(brand => (
-                  <option 
-                    key={brand} 
-                    value={brand}
-                    style={{ 
-                      backgroundColor: '#1a1f2e', 
-                      color: '#e5e7eb',
-                      padding: '8px 8px 8px 16px',
-                      borderBottom: '1px solid #2d3548'
-                    }}
-                  >
-                    {brand}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Content Sources" style={{ backgroundColor: '#1a1f2e', color: '#60a5fa', fontWeight: 'bold', padding: '4px' }}>
-                {CONTENT_SOURCES.map(source => (
-                  <option 
-                    key={source} 
-                    value={source}
-                    style={{ 
-                      backgroundColor: '#1a1f2e', 
-                      color: '#e5e7eb',
-                      padding: '8px 8px 8px 16px',
-                      borderBottom: '1px solid #2d3548'
-                    }}
-                  >
-                    {getMediumLabel(source)}
-                  </option>
-                ))}
-              </optgroup>
-            </select>
-          </div>
-        </div>
-
-        {/* Phase */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-gray-400 light:text-gray-600 uppercase tracking-wider">Phase</label>
-          <select
-            value={filters.phases[0] || ''}
-            onChange={handlePhaseChange}
-            className="appearance-none px-4 py-2.5 text-sm border-2 border-[#2d3548] light:border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-[#0f1419] light:bg-white text-gray-200 light:text-gray-900 capitalize min-w-[140px] transition-all duration-200 cursor-pointer hover:border-blue-500/50 font-medium shadow-lg"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-              backgroundRepeat: 'no-repeat',
-              backgroundPosition: 'right 0.5rem center',
-              backgroundSize: '1.5em 1.5em',
-              paddingRight: '2.5rem'
-            }}
-          >
-            <option value="">All Phases</option>
-            {PHASES.map(phase => (
-              <option key={phase} value={phase} className="capitalize">{phase}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Conversation Type - Multi-select */}
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-gray-400 light:text-gray-600 uppercase tracking-wider">Conversation</label>
-          <div className="relative">
-            <div className="min-w-[180px] px-4 py-2.5 pr-10 text-sm border-2 border-[#2d3548] light:border-gray-300 rounded-xl bg-[#0f1419] light:bg-white transition-all duration-200 hover:border-blue-500/50 shadow-lg cursor-pointer">
-              <div className="flex flex-wrap gap-1 min-h-[24px]">
-                {filters.conversationTypes.length === 0 ? (
-                  <span className="text-gray-500 light:text-gray-400">All Types</span>
-                ) : (
-                  filters.conversationTypes.map(type => (
-                    <span key={type} className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-500/20 light:bg-green-100 text-green-300 light:text-green-700 rounded text-xs font-medium capitalize">
-                      {type}
-                      <button 
-                        type="button"
-                        onClick={(e) => { 
-                          e.preventDefault();
-                          e.stopPropagation(); 
-                          handleConversationToggle(type); 
-                        }} 
-                        className="ml-1 hover:text-green-100 light:hover:text-green-900 font-bold text-base leading-none"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))
-                )}
-              </div>
-            </div>
-            {/* Dropdown arrow indicator */}
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-            <select
-              onChange={(e) => { if (e.target.value) handleConversationToggle(e.target.value as ConversationType); e.target.value = ''; }}
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              style={{
-                color: '#fff',
-                backgroundColor: '#0f1419',
-              }}
-            >
-              <option value="" style={{ backgroundColor: '#1a1f2e', color: '#9ca3af', padding: '8px' }}>Select Conversation Type...</option>
+          {/* Conversations */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Conversations</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
               {CONVERSATION_TYPES.map(type => (
-                <option 
-                  key={type} 
-                  value={type} 
-                  className="capitalize"
-                  style={{ 
-                    backgroundColor: '#1a1f2e', 
-                    color: '#e5e7eb',
-                    padding: '8px',
-                    borderBottom: '1px solid #2d3548',
-                    textTransform: 'capitalize'
-                  }}
-                >
-                  {type}
-                </option>
+                <label key={type} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-green-500 checked:border-green-500 transition-all cursor-pointer"
+                      checked={filters.conversationTypes.includes(type)}
+                      onChange={() => handleConversationToggle(type)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors capitalize">{type}</span>
+                </label>
               ))}
-            </select>
+            </div>
           </div>
-        </div>
 
-        {/* Reset Button */}
-        <div className="flex flex-col gap-2 ml-auto">
-          <label className="text-xs font-bold text-transparent uppercase tracking-wider select-none">Reset</label>
-          <button
-            onClick={handleReset}
-            className="group relative px-6 py-2.5 text-sm font-semibold text-gray-300 light:text-gray-700 bg-gradient-to-r from-red-500/10 to-orange-500/10 light:from-red-50 light:to-orange-50 hover:from-red-500/20 hover:to-orange-500/20 light:hover:from-red-100 light:hover:to-orange-100 border-2 border-red-500/30 light:border-red-300 hover:border-red-500 rounded-xl transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-105"
-          >
-            <span className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              Reset Filters
-            </span>
-          </button>
+          {/* Goals */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Goal</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {GOALS.map(goal => (
+                <label key={goal} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-purple-500 checked:border-purple-500 transition-all cursor-pointer"
+                      checked={filters.goals.includes(goal)}
+                      onChange={() => handleGoalToggle(goal)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors capitalize">{goal}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
         </div>
       </div>
+
+      {/* Brand Filters */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-300 mb-4 border-l-4 border-purple-500 pl-3">Brand Filters</h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          
+          {/* Country */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Country</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {COUNTRIES.map(country => (
+                <label key={country} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-blue-400 checked:border-blue-400 transition-all cursor-pointer"
+                      checked={filters.countries.includes(country)}
+                      onChange={() => handleCountryToggle(country)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{country}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Language */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Language</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {LANGUAGES.map(lang => (
+                <label key={lang} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-blue-400 checked:border-blue-400 transition-all cursor-pointer"
+                      checked={filters.languages.includes(lang)}
+                      onChange={() => handleLanguageToggle(lang)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{lang}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Phase */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Phase</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {PHASES.map(phase => (
+                <label key={phase} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-blue-400 checked:border-blue-400 transition-all cursor-pointer"
+                      checked={filters.phases.includes(phase)}
+                      onChange={() => handlePhaseToggle(phase)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors capitalize">{phase}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Brand */}
+          <div className="bg-[#0f1419] p-4 rounded-xl border border-gray-700/50">
+            <h4 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-3">Brand</h4>
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+              {BRANDS.map(brand => (
+                <label key={brand} className="flex items-center gap-3 cursor-pointer group">
+                  <div className="relative flex items-center justify-center">
+                    <input 
+                      type="checkbox" 
+                      className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded bg-transparent checked:bg-blue-400 checked:border-blue-400 transition-all cursor-pointer"
+                      checked={filters.brands.includes(brand)}
+                      onChange={() => handleBrandToggle(brand)}
+                    />
+                    <svg className="absolute w-3.5 h-3.5 pointer-events-none opacity-0 peer-checked:opacity-100 text-white transition-opacity" viewBox="0 0 14 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </div>
+                  <span className="text-sm text-gray-300 group-hover:text-white transition-colors">{brand}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <style dangerouslySetInnerHTML={{__html: `
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+      `}} />
     </div>
   );
 }
