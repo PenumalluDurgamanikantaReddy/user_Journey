@@ -1,181 +1,283 @@
-import { User, Medium, ConversationType, Goal, getMediumLabel, getConversationLabel } from '@/app/data/mockData';
-import { COLOR_MAP } from '@/app/types/sankey';
-
-interface BoxData {
-  label: string;
-  count: number;
-  percentage: number;
-  color: string;
-  users: User[];
-  isExpandable?: boolean;
-  children?: Medium[];
-  mediumType?: Medium;
-}
+import { Medium } from '@/app/data/mockData';
+import { PhaseBox, FlowBand, COLOR_MAP, PlatformCounts } from '@/app/types/sankey';
 
 // Social media platforms that can be expanded
 const SOCIAL_MEDIA_PLATFORMS: Medium[] = ['facebook', 'instagram', 'twitter'];
 const ADS_PLATFORMS: Medium[] = ['google-ads', 'meta-ads'];
 
-export function groupUsersByMedium(users: User[], expandedCategory?: string | null): BoxData[] {
-  // Normalize the expanded category for comparison
-  const normalizedExpanded = expandedCategory?.toLowerCase().replace(/\s+/g, '-');
-  
-  // If "Social Media" is expanded, show individual platforms
-  if (normalizedExpanded === 'social-media') {
-    return SOCIAL_MEDIA_PLATFORMS.map(medium => {
-      const mediumUsers = users.filter(u => u.medium === medium);
-      return {
-        label: getMediumLabel(medium),
-        count: mediumUsers.length,
-        percentage: users.length > 0 ? (mediumUsers.length / users.length) * 100 : 0,
+// ── helpers ──────────────────────────────────────────────────────────────────
+
+function mediumLabel(medium: Medium): string {
+  const labels: Record<Medium, string> = {
+    facebook: 'Facebook',
+    instagram: 'Instagram',
+    twitter: 'Twitter',
+    'google-ads': 'Google Ads',
+    'meta-ads': 'Meta Ads',
+    youversion: 'YouVersion',
+    website: 'Website',
+    ai: 'AI Chat',
+    'daily-devotionals': 'Daily Devotionals',
+  };
+  return labels[medium];
+}
+
+// ── Phase 1: Content (grouped by category or individual) ─────────────────────
+
+export function groupPlatformsByContent(
+  platforms: PlatformCounts[],
+  expandedCategory: string | null
+): PhaseBox[] {
+  const total = platforms.reduce((s, p) => s + p.total, 0);
+  if (total === 0) return [];
+
+  const normalised = expandedCategory?.toLowerCase().replace(/\s+/g, '-');
+
+  // Expanded: show individual sub-platforms
+  if (normalised === 'social-media') {
+    return SOCIAL_MEDIA_PLATFORMS.flatMap(medium => {
+      const p = platforms.find(pl => pl.medium === medium);
+      if (!p || p.total === 0) return [];
+      return [{
+        id: medium,
+        label: mediumLabel(medium),
+        count: p.total,
+        percentage: (p.total / total) * 100,
         color: COLOR_MAP[medium] || '#6b7280',
-        users: mediumUsers,
+        x: 0, y: 0, width: 0, height: 0,
         isExpandable: false,
-        mediumType: medium,
-      };
-    }).filter(box => box.count > 0);
+        medium,
+      }];
+    });
   }
 
-  // If "Ads" is expanded, show Google Ads and Meta Ads
-  if (normalizedExpanded === 'ads') {
-    return ADS_PLATFORMS.map(medium => {
-      const mediumUsers = users.filter(u => u.medium === medium);
-      return {
-        label: getMediumLabel(medium),
-        count: mediumUsers.length,
-        percentage: users.length > 0 ? (mediumUsers.length / users.length) * 100 : 0,
+  if (normalised === 'ads') {
+    return ADS_PLATFORMS.flatMap(medium => {
+      const p = platforms.find(pl => pl.medium === medium);
+      if (!p || p.total === 0) return [];
+      return [{
+        id: medium,
+        label: mediumLabel(medium),
+        count: p.total,
+        percentage: (p.total / total) * 100,
         color: COLOR_MAP[medium] || '#6b7280',
-        users: mediumUsers,
+        x: 0, y: 0, width: 0, height: 0,
         isExpandable: false,
-        mediumType: medium,
-      };
-    }).filter(box => box.count > 0);
+        medium,
+      }];
+    });
   }
 
-  // Otherwise, show high-level categories
-  const boxes: BoxData[] = [];
+  // Default: grouped view
+  const boxes: PhaseBox[] = [];
 
-  // Social Media (grouped)
-  const socialMediaUsers = users.filter(u => SOCIAL_MEDIA_PLATFORMS.includes(u.medium));
-  if (socialMediaUsers.length > 0) {
+  const socialTotal = platforms
+    .filter(p => SOCIAL_MEDIA_PLATFORMS.includes(p.medium))
+    .reduce((s, p) => s + p.total, 0);
+  if (socialTotal > 0) {
     boxes.push({
+      id: 'Social Media',
       label: 'Social Media',
-      count: socialMediaUsers.length,
-      percentage: (socialMediaUsers.length / users.length) * 100,
-      color: COLOR_MAP['facebook'] || '#3b5998',
-      users: socialMediaUsers,
+      count: socialTotal,
+      percentage: (socialTotal / total) * 100,
+      color: COLOR_MAP['facebook'],
+      x: 0, y: 0, width: 0, height: 0,
       isExpandable: true,
-      children: SOCIAL_MEDIA_PLATFORMS,
     });
   }
 
-  // Ads (grouped)
-  const adsUsers = users.filter(u => ADS_PLATFORMS.includes(u.medium));
-  if (adsUsers.length > 0) {
+  const adsTotal = platforms
+    .filter(p => ADS_PLATFORMS.includes(p.medium))
+    .reduce((s, p) => s + p.total, 0);
+  if (adsTotal > 0) {
     boxes.push({
+      id: 'Ads',
       label: 'Ads',
-      count: adsUsers.length,
-      percentage: (adsUsers.length / users.length) * 100,
-      color: COLOR_MAP['google-ads'] || '#4285f4',
-      users: adsUsers,
+      count: adsTotal,
+      percentage: (adsTotal / total) * 100,
+      color: COLOR_MAP['google-ads'],
+      x: 0, y: 0, width: 0, height: 0,
       isExpandable: true,
-      children: ADS_PLATFORMS,
     });
   }
 
-  // Individual platforms (not grouped)
-  const individualMediums: Medium[] = ['youversion', 'website', 'ai', 'daily-devotionals'];
-  individualMediums.forEach(medium => {
-    const mediumUsers = users.filter(u => u.medium === medium);
-    if (mediumUsers.length > 0) {
-      boxes.push({
-        label: getMediumLabel(medium),
-        count: mediumUsers.length,
-        percentage: (mediumUsers.length / users.length) * 100,
-        color: COLOR_MAP[medium] || '#6b7280',
-        users: mediumUsers,
-        isExpandable: false,
-        mediumType: medium,
-      });
-    }
+  const individual: Medium[] = ['youversion', 'website', 'ai', 'daily-devotionals'];
+  individual.forEach(medium => {
+    const p = platforms.find(pl => pl.medium === medium);
+    if (!p || p.total === 0) return;
+    boxes.push({
+      id: medium,
+      label: mediumLabel(medium),
+      count: p.total,
+      percentage: (p.total / total) * 100,
+      color: COLOR_MAP[medium] || '#6b7280',
+      x: 0, y: 0, width: 0, height: 0,
+      isExpandable: false,
+      medium,
+    });
   });
 
   return boxes;
 }
 
-export function groupUsersByConversationType(users: User[]): BoxData[] {
-  const groups: Record<ConversationType, User[]> = {
-    comments: [],
-    dm: [],
-    courses: [],
-  };
-  
-  users.forEach(user => {
-    if (user.conversationType && groups[user.conversationType]) {
-      groups[user.conversationType].push(user);
-    }
-  });
+// ── Phase 2: Conversation type ────────────────────────────────────────────────
 
-  const totalWithConversation = Object.values(groups).reduce((sum, items) => sum + items.length, 0);
+export function groupByConversationType(
+  platforms: PlatformCounts[],
+  contentFilter?: string[] // IDs of content boxes to include (undefined = all)
+): PhaseBox[] {
+  // Which platforms to consider
+  const relevant = contentFilter
+    ? platforms.filter(p => {
+        // Match by medium id or by group (Social Media / Ads)
+        return contentFilter.some(f => {
+          if (f === 'Social Media') return SOCIAL_MEDIA_PLATFORMS.includes(p.medium);
+          if (f === 'Ads')          return ADS_PLATFORMS.includes(p.medium);
+          return p.medium === f;
+        });
+      })
+    : platforms;
 
-  return Object.entries(groups)
-    .filter(([_, items]) => items.length > 0)
-    .map(([type, items]) => ({
-      label: getConversationLabel(type as ConversationType),
-      count: items.length,
-      percentage: totalWithConversation > 0 ? (items.length / totalWithConversation) * 100 : 0,
-      color: COLOR_MAP[type] || '#6b7280',
-      users: items,
-    }));
+  const comments = relevant.reduce((s, p) => s + p.comments, 0);
+  const dms      = relevant.reduce((s, p) => s + p.dms, 0);
+  const courses  = relevant.reduce((s, p) => s + p.courses, 0);
+  const total    = comments + dms + courses;
+
+  if (total === 0) return [];
+
+  const result: PhaseBox[] = [];
+  if (comments > 0) result.push({ id: 'Comments',        label: 'Comments',        count: comments, percentage: (comments / total) * 100, color: COLOR_MAP['comments'], x:0,y:0,width:0,height:0 });
+  if (dms > 0)      result.push({ id: 'Direct Messages', label: 'Direct Messages', count: dms,      percentage: (dms      / total) * 100, color: COLOR_MAP['dm'],       x:0,y:0,width:0,height:0 });
+  if (courses > 0)  result.push({ id: 'Courses',         label: 'Courses',         count: courses,  percentage: (courses  / total) * 100, color: COLOR_MAP['Courses'],  x:0,y:0,width:0,height:0 });
+  return result;
 }
 
-export function groupUsersByGoal(users: User[]): BoxData[] {
-  // Only "Church" goal now
-  const churchUsers = users.filter(u => u.goal === 'church');
-  
-  if (churchUsers.length === 0) return [];
+// ── Phase 3: Goal ─────────────────────────────────────────────────────────────
 
+/**
+ * We don't have real church-attendance data yet.
+ * Return a single placeholder box so the column renders with a "Coming Soon" label.
+ */
+export function groupByGoal(_platforms: PlatformCounts[]): PhaseBox[] {
   return [{
+    id: 'Church',
     label: 'Church',
-    count: churchUsers.length,
-    percentage: 100, // All users with goals go to church
-    color: COLOR_MAP['church'] || '#10b981',
-    users: churchUsers,
+    count: 0,           // no real data
+    percentage: 0,
+    color: COLOR_MAP['church'],
+    x: 0, y: 0,
+    width: 0,
+    // Give it a fixed visible height since count=0 would collapse it
+    height: 80,
+    isExpandable: false,
   }];
 }
 
-interface FlowData {
+// ── Flows between phases ──────────────────────────────────────────────────────
+
+export interface FlowData {
   source: string;
   target: string;
   count: number;
-  users: User[];
 }
 
-export function calculateFlowsBetweenPhases(
-  sourceBoxes: BoxData[],
-  targetBoxes: BoxData[],
-  getTargetKey: (user: User) => string | undefined
+/**
+ * Build content→conversation flows from raw platform counts.
+ * For each source box (Social Media / Ads / individual platform) we
+ * distribute its comments/dms/courses proportionally across conversation boxes.
+ */
+export function buildContentToConversationFlows(
+  sourceBoxes: PhaseBox[],
+  targetBoxes: PhaseBox[],
+  platforms: PlatformCounts[]
 ): FlowData[] {
-  const flows: Record<string, FlowData> = {};
+  const flows: FlowData[] = [];
 
-  sourceBoxes.forEach(sourceBox => {
-    sourceBox.users.forEach(user => {
-      const targetKey = getTargetKey(user);
-      if (!targetKey) return;
-
-      const flowKey = `${sourceBox.label}->${targetKey}`;
-      if (!flows[flowKey]) {
-        flows[flowKey] = {
-          source: sourceBox.label,
-          target: targetKey,
-          count: 0,
-          users: [],
-        };
-      }
-      flows[flowKey].count++;
-      flows[flowKey].users.push(user);
+  sourceBoxes.forEach(src => {
+    // Which platforms feed this source box?
+    const relevant = platforms.filter(p => {
+      if (src.label === 'Social Media') return SOCIAL_MEDIA_PLATFORMS.includes(p.medium);
+      if (src.label === 'Ads')          return ADS_PLATFORMS.includes(p.medium);
+      return p.medium === (src.medium ?? src.id as Medium);
     });
+
+    const comments = relevant.reduce((s, p) => s + p.comments, 0);
+    const dms      = relevant.reduce((s, p) => s + p.dms, 0);
+    const courses  = relevant.reduce((s, p) => s + p.courses, 0);
+
+    const pushFlow = (target: string, count: number) => {
+      if (count > 0 && targetBoxes.find(t => t.id === target)) {
+        flows.push({ source: src.id, target, count });
+      }
+    };
+
+    pushFlow('Comments',        comments);
+    pushFlow('Direct Messages', dms);
+    pushFlow('Courses',         courses);
   });
 
-  return Object.values(flows).filter(flow => flow.count > 0);
+  return flows;
+}
+
+/**
+ * Build conversation→goal flows.
+ * All conversation types flow into "Church" (the only goal).
+ */
+export function buildConversationToGoalFlows(
+  sourceBoxes: PhaseBox[],
+  targetBoxes: PhaseBox[]
+): FlowData[] {
+  if (targetBoxes.length === 0) return [];
+  return sourceBoxes
+    .filter(s => s.count > 0)
+    .map(s => ({ source: s.id, target: targetBoxes[0].id, count: s.count }));
+}
+
+// ── Route bands (geometry only — no User[]) ───────────────────────────────────
+
+export function routeFlowBands(
+  sourceBoxes: PhaseBox[],
+  targetBoxes: PhaseBox[],
+  flows: FlowData[]
+): FlowBand[] {
+  const bands: FlowBand[] = [];
+
+  // Track how much of each box's height has been consumed
+  const sourceOffsets: Record<string, number> = {};
+  const targetOffsets: Record<string, number> = {};
+
+  flows.forEach(flow => {
+    const src = sourceBoxes.find(b => b.id === flow.source);
+    const tgt = targetBoxes.find(b => b.id === flow.target);
+    if (!src || !tgt || flow.count === 0) return;
+
+    const srcTotal  = flows.filter(f => f.source === flow.source).reduce((s, f) => s + f.count, 0);
+    const tgtTotal  = flows.filter(f => f.target === flow.target).reduce((s, f) => s + f.count, 0);
+
+    const srcHeight = srcTotal > 0 ? (flow.count / srcTotal) * src.height : 0;
+    const tgtHeight = tgtTotal > 0 ? (flow.count / tgtTotal) * tgt.height : 0;
+
+    const srcOff = sourceOffsets[src.id] ?? 0;
+    const tgtOff = targetOffsets[tgt.id] ?? 0;
+
+    bands.push({
+      id: `${flow.source}->${flow.target}`,
+      sourceId: src.id,
+      targetId: tgt.id,
+      sourceLabel: src.label,
+      targetLabel: tgt.label,
+      count: flow.count,
+      percentage: src.count > 0 ? (flow.count / src.count) * 100 : 0,
+      color: src.color,
+      sourceY: src.y + srcOff + srcHeight / 2,
+      targetY: tgt.y + tgtOff + tgtHeight / 2,
+      sourceHeight: srcHeight,
+      targetHeight: tgtHeight,
+    });
+
+    sourceOffsets[src.id] = srcOff + srcHeight;
+    targetOffsets[tgt.id] = tgtOff + tgtHeight;
+  });
+
+  return bands;
 }

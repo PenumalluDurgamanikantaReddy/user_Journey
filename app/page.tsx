@@ -6,9 +6,9 @@ import ThemeToggle from '@/app/components/ThemeToggle';
 import Filters from '@/app/components/Filters';
 import SankeyVisualization from '@/app/components/SankeyVisualization';
 import DetailedStats from '@/app/components/DetailedStats';
-import UserExplorer from '@/app/components/UserExplorer';
 import AuthStatus from '@/app/components/AuthStatus';
-import { mockUsers, filterUsers, FilterState } from '@/app/data/mockData';
+import { FilterState } from '@/app/data/mockData';
+import { useAnalyticsData } from '@/app/hooks/useAnalyticsData';
 
 interface SessionState {
   authenticated: boolean;
@@ -185,7 +185,8 @@ function HomeContent() {
     phases: [],
     conversationTypes: [],
     goals: [],
-    dateRange: { start: '2024-01-01', end: '2024-12-31' }
+    // Use a wide open range so live data (dated today) is never filtered out by default
+    dateRange: { start: '2020-01-01', end: '2099-12-31' }
   });
 
   const [session, setSession] = useState<SessionState | null>(null);
@@ -208,7 +209,18 @@ function HomeContent() {
     fetchSession();
   }, []);
 
-  const filteredUsers = filterUsers(mockUsers, filters);
+  // Build analytics filters from the UI filter state.
+  // Only send a year filter when the user has selected a specific year range
+  // (i.e. start and end are in the same calendar year). Otherwise fetch all years.
+  const startYear = filters.dateRange.start ? new Date(filters.dateRange.start).getFullYear() : null;
+  const endYear   = filters.dateRange.end   ? new Date(filters.dateRange.end).getFullYear()   : null;
+  const analyticsFilters = {
+    year:  startYear && endYear && startYear === endYear ? startYear.toString() : undefined,
+    brand: filters.brands.length === 1 ? filters.brands[0] : undefined,
+  };
+
+  // Fetch live data from BigQuery APIs
+  const { data: analyticsData, loading: analyticsLoading, error: analyticsError } = useAnalyticsData(analyticsFilters);
 
   return (
     <div className="min-h-screen bg-[#0f1419] light:bg-gradient-to-br light:from-gray-50 light:via-white light:to-gray-50 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
@@ -248,10 +260,19 @@ function HomeContent() {
                   </svg>
                 </div>
                 <p className="text-xs font-semibold text-gray-400 light:text-gray-600 uppercase tracking-wider mb-2">Total Users</p>
-                <p className="text-4xl font-bold text-blue-400 light:text-blue-600 mb-1">{mockUsers.length}</p>
-                <p className="text-xs text-gray-500 light:text-gray-500">in dataset</p>
+                {analyticsLoading ? (
+                  <div className="h-10 flex items-center justify-center">
+                    <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  </div>
+                ) : (
+                  <p className="text-4xl font-bold text-blue-400 light:text-blue-600 mb-1">
+                    {analyticsData.grandTotal.toLocaleString()}
+                  </p>
+                )}
+                <p className="text-xs text-gray-500 light:text-gray-500">across all platforms</p>
               </div>
             </div>
+
             <div className="group relative bg-gradient-to-br from-purple-500/10 to-purple-600/5 light:from-purple-50 light:to-purple-100 rounded-2xl shadow-xl border border-purple-500/20 light:border-purple-200 p-6 text-center transition-all duration-300 hover:shadow-2xl hover:scale-105 hover:border-purple-500/40">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 to-purple-600/0 group-hover:from-purple-500/5 group-hover:to-purple-600/10 rounded-2xl transition-all duration-300"></div>
               <div className="relative">
@@ -260,9 +281,11 @@ function HomeContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                   </svg>
                 </div>
-                <p className="text-xs font-semibold text-gray-400 light:text-gray-600 uppercase tracking-wider mb-2">Filtered Results</p>
-                <p className="text-4xl font-bold text-purple-400 light:text-purple-600 mb-1">{filteredUsers.length}</p>
-                <p className="text-xs text-gray-500 light:text-gray-500">matching criteria</p>
+                <p className="text-xs font-semibold text-gray-400 light:text-gray-600 uppercase tracking-wider mb-2">Active Platforms</p>
+                <p className="text-4xl font-bold text-purple-400 light:text-purple-600 mb-1">
+                    {analyticsData.platforms.length.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500 light:text-gray-500">active platforms</p>
               </div>
             </div>
 
@@ -274,27 +297,36 @@ function HomeContent() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
                 </div>
-                <p className="text-xs font-semibold text-gray-400 light:text-gray-600 uppercase tracking-wider mb-2">Coverage</p>
-                <p className="text-4xl font-bold text-green-400 light:text-green-600 mb-1">
-                  {Math.round((filteredUsers.length / mockUsers.length) * 100)}%
-                </p>
-                <p className="text-xs text-gray-500 light:text-gray-500">of total data</p>
+                <p className="text-xs font-semibold text-gray-400 light:text-gray-600 uppercase tracking-wider mb-2">Church Goal</p>
+                <p className="text-4xl font-bold text-green-400 light:text-green-600 mb-1">—</p>
+                <p className="text-xs text-gray-500 light:text-gray-500">data coming soon</p>
               </div>
             </div>
           </div>
+
+          {/* Analytics error banner */}
+          {analyticsError && !analyticsLoading && (
+            <div className="mb-6 p-4 bg-amber-950/30 border border-amber-700/40 rounded-xl text-amber-400 text-sm">
+              ⚠️ {analyticsError}
+            </div>
+          )}
         </div>
 
         {/* Filters */}
         <Filters filters={filters} onFilterChange={setFilters} />
 
         {/* Sankey Visualization */}
-        <SankeyVisualization users={filteredUsers} />
+        {analyticsLoading ? (
+          <div className="bg-[#1a1f2e] rounded-xl shadow-lg p-12 mb-8 flex flex-col items-center justify-center gap-4">
+            <div className="w-10 h-10 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <p className="text-gray-400 text-lg">Loading analytics data from BigQuery…</p>
+          </div>
+        ) : (
+          <SankeyVisualization data={analyticsData} />
+        )}
 
         {/* Detailed Stats */}
-        <DetailedStats users={filteredUsers} />
-
-        {/* User Explorer */}
-        <UserExplorer users={filteredUsers} />
+        <DetailedStats data={analyticsData} />
       </div>
     </div>
   );
