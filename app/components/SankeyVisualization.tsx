@@ -15,6 +15,7 @@ import { positionPhaseBoxes } from '@/app/utils/layoutEngine';
 
 interface Props {
   data: AggregatedData;
+  conversationTypes?: string[];
 }
 
 function fmt(n: number): string {
@@ -23,7 +24,7 @@ function fmt(n: number): string {
   return n.toLocaleString();
 }
 
-export default function SankeyVisualization({ data }: Props) {
+export default function SankeyVisualization({ data, conversationTypes }: Props) {
   const [hoveredBand, setHoveredBand] = useState<string | null>(null);
   const [tooltipData, setTooltipData] = useState<{ x: number; y: number; band: FlowBand } | null>(null);
   const [expandedCategory, setExpanded] = useState<string | null>(null);
@@ -49,7 +50,20 @@ export default function SankeyVisualization({ data }: Props) {
   console.log(newData, 'newData')
   // ── Phase boxes ────────────────────────────────────────────────────────────
   const phase1Data = groupPlatformsByContent(newData, expandedCategory);
-  const phase2Data = groupByConversationType(newData);
+  const rawPhase2Data = groupByConversationType(newData);
+
+  // Map filter keys to phase2 box IDs and filter if conversationTypes is set
+  const convTypeToBoxId: Record<string, string> = {
+    comments: 'Comments',
+    dm: 'Direct Messages',
+    courses: 'Courses',
+  };
+  const phase2Data = conversationTypes && conversationTypes.length > 0
+    ? rawPhase2Data.filter(box =>
+        conversationTypes.some(t => convTypeToBoxId[t] === box.id)
+      )
+    : rawPhase2Data;
+
   const phase3Data = groupByGoal(newData);
 
   const layout = positionPhaseBoxes(phase1Data, phase2Data, phase3Data);

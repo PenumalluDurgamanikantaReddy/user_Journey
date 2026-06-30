@@ -341,7 +341,7 @@ function HomeContent() {
             <p className="text-gray-400 text-lg">Loading analytics data from BigQuery…</p>
           </div>
         ) : (
-          <SankeyVisualization data={analyticsData} />
+          <SankeyVisualization data={analyticsData} conversationTypes={filters.conversationTypes} />
         )}
 
         {/* Detailed Stats */}
