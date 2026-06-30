@@ -19,13 +19,13 @@ interface Props {
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
+  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
   return n.toLocaleString();
 }
 
 export default function SankeyVisualization({ data }: Props) {
-  const [hoveredBand, setHoveredBand]   = useState<string | null>(null);
-  const [tooltipData, setTooltipData]   = useState<{ x: number; y: number; band: FlowBand } | null>(null);
+  const [hoveredBand, setHoveredBand] = useState<string | null>(null);
+  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; band: FlowBand } | null>(null);
   const [expandedCategory, setExpanded] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
 
@@ -38,22 +38,30 @@ export default function SankeyVisualization({ data }: Props) {
       </div>
     );
   }
+  let newData: PlatformCounts[] = [...platforms, {
+    medium: "daily-devotionals",
+    total: 50000,
+    comments: 10000,
+    dms: 20000,
+    courses: 20000
+  }];
 
+  console.log(newData, 'newData')
   // ── Phase boxes ────────────────────────────────────────────────────────────
-  const phase1Data = groupPlatformsByContent(platforms, expandedCategory);
-  const phase2Data = groupByConversationType(platforms);
-  const phase3Data = groupByGoal(platforms);
+  const phase1Data = groupPlatformsByContent(newData, expandedCategory);
+  const phase2Data = groupByConversationType(newData);
+  const phase3Data = groupByGoal(newData);
 
   const layout = positionPhaseBoxes(phase1Data, phase2Data, phase3Data);
   const { phase1Boxes, phase2Boxes, phase3Boxes, totalHeight, totalWidth } = layout;
-
+  // console.log(phase1Boxes, 'phase1Boxes')
   // ── Flow bands ─────────────────────────────────────────────────────────────
-  const c2cFlows  = buildContentToConversationFlows(phase1Boxes, phase2Boxes, platforms);
-  const c2gFlows  = buildConversationToGoalFlows(phase2Boxes, phase3Boxes);
+  const c2cFlows = buildContentToConversationFlows(phase1Boxes, phase2Boxes, newData);
+  const c2gFlows = buildConversationToGoalFlows(phase2Boxes, phase3Boxes);
   const bands1to2 = routeFlowBands(phase1Boxes, phase2Boxes, c2cFlows);
   const bands2to3 = routeFlowBands(phase2Boxes, phase3Boxes, c2gFlows);
-  const allBands  = [...bands1to2, ...bands2to3];
-
+  const allBands = [...bands1to2, ...bands2to3];
+  console.log(allBands, 'allBands')
   // ── Event handlers ─────────────────────────────────────────────────────────
   const handleBoxClick = (box: PhaseBox) => {
     if (!box.isExpandable || transitioning) return;
@@ -71,7 +79,7 @@ export default function SankeyVisualization({ data }: Props) {
   // ── Renderers ──────────────────────────────────────────────────────────────
   const renderBox = (box: PhaseBox) => {
     const displayLabel = LABEL_MAP[box.label] || box.label;
-    const isPlaceholder = box.id === 'Church' && box.count === 0;
+    const isPlaceholder = (box.id === 'Church' || box.id === 'daily-devotionals') && box.count === 0;
 
     return (
       <g key={box.id} onClick={() => handleBoxClick(box)} className={box.isExpandable ? 'cursor-pointer' : ''}>
@@ -135,7 +143,7 @@ export default function SankeyVisualization({ data }: Props) {
 
     const srcX = src.x + src.width;
     const tgtX = tgt.x;
-    const cp   = (tgtX - srcX) / 2;
+    const cp = (tgtX - srcX) / 2;
     const path = `M ${srcX} ${band.sourceY} C ${srcX + cp} ${band.sourceY}, ${tgtX - cp} ${band.targetY}, ${tgtX} ${band.targetY}`;
     const isHovered = hoveredBand === band.id;
     const midX = (srcX + tgtX) / 2;
@@ -164,10 +172,10 @@ export default function SankeyVisualization({ data }: Props) {
   };
 
   // ── Totals for bottom stats ────────────────────────────────────────────────
-  const totalCourses  = platforms.reduce((s, p) => s + p.courses, 0);
-  const totalComments = platforms.reduce((s, p) => s + p.comments, 0);
-  const totalDMs      = platforms.reduce((s, p) => s + p.dms, 0);
-  const convTotal     = totalCourses + totalComments + totalDMs;
+  const totalCourses = newData.reduce((s, p) => s + p.courses, 0);
+  const totalComments = newData.reduce((s, p) => s + p.comments, 0);
+  const totalDMs = newData.reduce((s, p) => s + p.dms, 0);
+  const convTotal = totalCourses + totalComments + totalDMs;
 
   return (
     <div className="bg-[#1a1f2e] light:bg-white rounded-xl shadow-lg p-8 mb-8 transition-colors duration-300">

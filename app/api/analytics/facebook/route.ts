@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get('year');
-    const month = searchParams.get('month');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
 
     const params: Record<string, any> = {};
@@ -26,17 +26,17 @@ export async function GET(request: NextRequest) {
     // Filter for ad conversions (facebook_ads_combined_conversions)
     let adFilters = `1=1`;
 
-    if (year) {
-      courseFilters += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      postFilters += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      adFilters += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      params.year = parseInt(year, 10);
+    if (startDate) {
+      courseFilters += ` AND Date >= CAST(@startDate AS DATE)`;
+      postFilters += ` AND Date >= CAST(@startDate AS DATE)`;
+      adFilters += ` AND Date >= CAST(@startDate AS DATE)`;
+      params.startDate = startDate;
     }
-    if (month) {
-      courseFilters += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      postFilters += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      adFilters += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      params.month = parseInt(month, 10);
+    if (endDate) {
+      courseFilters += ` AND Date <= CAST(@endDate AS DATE)`;
+      postFilters += ` AND Date <= CAST(@endDate AS DATE)`;
+      adFilters += ` AND Date <= CAST(@endDate AS DATE)`;
+      params.endDate = endDate;
     }
     if (brand) {
       courseFilters += ` AND Journey_brand_phase = @brand`; // Adjust column based on your brand matching logic

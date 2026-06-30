@@ -104,14 +104,19 @@ export function groupPlatformsByContent(
   const individual: Medium[] = ['youversion', 'website', 'ai', 'daily-devotionals'];
   individual.forEach(medium => {
     const p = platforms.find(pl => pl.medium === medium);
-    if (!p || p.total === 0) return;
+    const count = p?.total || 0;
+    
+    // Skip if 0, EXCEPT for daily devotionals
+    if (count === 0 && medium !== 'daily-devotionals') return;
+
     boxes.push({
       id: medium,
       label: mediumLabel(medium),
-      count: p.total,
-      percentage: (p.total / total) * 100,
+      count: count,
+      percentage: total > 0 ? (count / total) * 100 : 0,
       color: COLOR_MAP[medium] || '#6b7280',
-      x: 0, y: 0, width: 0, height: 0,
+      x: 0, y: 0, width: 0, 
+      height: count === 0 ? 80 : 0, // Give fixed height if count is 0 so it renders
       isExpandable: false,
       medium,
     });

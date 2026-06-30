@@ -5,9 +5,14 @@ import { Medium } from '@/app/data/mockData';
 import { AggregatedData, PlatformCounts } from '@/app/types/sankey';
 
 export interface AnalyticsFilters {
-  year?: string;
-  month?: string;
+  startDate?: string;
+  endDate?: string;
   brand?: string;
+  language?: string;
+  /** platforms to include — undefined/empty = all */
+  contentSources?: string[];
+  /** conversation types to include — undefined/empty = all */
+  conversationTypes?: string[];
 }
 
 interface AnalyticsState {
@@ -23,9 +28,10 @@ async function fetchPlatform(
   filters: AnalyticsFilters
 ): Promise<any | null> {
   const params = new URLSearchParams();
-  if (filters.year)  params.set('year',  filters.year);
-  if (filters.month) params.set('month', filters.month);
-  if (filters.brand) params.set('brand', filters.brand);
+  if (filters.startDate) params.set('startDate', filters.startDate);
+  if (filters.endDate)   params.set('endDate',   filters.endDate);
+  if (filters.brand)     params.set('brand',     filters.brand);
+  if (filters.language)  params.set('language',  filters.language);
   const url = `${endpoint}${params.toString() ? `?${params.toString()}` : ''}`;
   try {
     const res = await fetch(url);
@@ -48,13 +54,24 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
   const fetchAll = useCallback(async () => {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
+    // Decide which platforms to actually fetch
+    const allPlatforms = ['facebook', 'instagram', 'google-ads', 'youversion', 'website', 'ai'];
+    const activePlatforms = filters.contentSources && filters.contentSources.length > 0
+      ? filters.contentSources
+      : allPlatforms;
+
+    // Helper: only fetch if the platform is in the active set
+    const shouldFetch = (p: string) => activePlatforms.includes(p);
+
     const [facebook, instagram, googleAds, youversion, website, aiChat] = await Promise.all([
-      fetchPlatform('/api/analytics/facebook',   filters),
-      fetchPlatform('/api/analytics/instagram',  filters),
-      fetchPlatform('/api/analytics/google-ads', filters),
-      fetchPlatform('/api/analytics/youversion', filters),
-      fetchPlatform('/api/analytics/website',    filters),
-      fetchPlatform('/api/analytics/ai-chat',    filters),
+      shouldFetch('facebook')   ? fetchPlatform('/api/analytics/facebook',   filters) : Promise.resolve(null),
+      shouldFetch('instagram')  ? fetchPlatform('/api/analytics/instagram',  filters) : Promise.resolve(null),
+      shouldFetch('google-ads') ? fetchPlatform('/api/analytics/google-ads', filters) : Promise.resolve(null),
+      shouldFetch('youversion') ? fetchPlatform('/api/analytics/youversion',
+        filters.language ? { ...filters, language: filters.language } : filters
+      ) : Promise.resolve(null),
+      shouldFetch('website')    ? fetchPlatform('/api/analytics/website',    filters) : Promise.resolve(null),
+      shouldFetch('ai')         ? fetchPlatform('/api/analytics/ai-chat',    filters) : Promise.resolve(null),
     ]);
 
     const platforms: PlatformCounts[] = [];
@@ -70,13 +87,19 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
       if (!raw) return;
       const total = Number(raw[totalKey] ?? 0);
       if (total === 0) return;
-      platforms.push({
-        medium,
-        total,
-        comments : commentsKey ? Number(raw[commentsKey] ?? 0) : 0,
-        dms      : dmsKey      ? Number(raw[dmsKey]      ?? 0) : 0,
-        courses  : coursesKey  ? Number(raw[coursesKey]  ?? 0) : 0,
-      });
+
+      let comments = commentsKey ? Number(raw[commentsKey] ?? 0) : 0;
+      let dms      = dmsKey      ? Number(raw[dmsKey]      ?? 0) : 0;
+      let courses  = coursesKey  ? Number(raw[coursesKey]  ?? 0) : 0;
+
+      // Apply conversation type filter — zero out excluded types
+      if (filters.conversationTypes && filters.conversationTypes.length > 0) {
+        if (!filters.conversationTypes.includes('comments')) comments = 0;
+        if (!filters.conversationTypes.includes('dm'))       dms      = 0;
+        if (!filters.conversationTypes.includes('courses'))  courses  = 0;
+      }
+
+      platforms.push({ medium, total, comments, dms, courses });
     };
 
     add('facebook',   facebook,   'totalUsers',  'comments',    'dms',  'courseJoins');
@@ -93,7 +116,11 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
       loading: false,
       error: grandTotal > 0 ? null : 'No data returned from analytics APIs.',
     });
-  }, [filters.year, filters.month, filters.brand]);
+  }, [filters.startDate, filters.endDate, filters.brand, filters.language,
+      // stable stringify for arrays so useCallback doesn't re-run on every render
+      JSON.stringify(filters.contentSources),
+      JSON.stringify(filters.conversationTypes),
+  ]);
 
   useEffect(() => {
     fetchAll();

@@ -13,21 +13,21 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get('year');
-    const month = searchParams.get('month');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
 
     const params: Record<string, any> = {};
 
     let adsFilters = `1=1`;
 
-    if (year) {
-      adsFilters += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      params.year = parseInt(year, 10);
+    if (startDate) {
+      adsFilters += ` AND Date >= CAST(@startDate AS DATE)`;
+      params.startDate = startDate;
     }
-    if (month) {
-      adsFilters += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      params.month = parseInt(month, 10);
+    if (endDate) {
+      adsFilters += ` AND Date <= CAST(@endDate AS DATE)`;
+      params.endDate = endDate;
     }
     if (brand) {
       // google_ads uses Account or Campaign_course to identify brand

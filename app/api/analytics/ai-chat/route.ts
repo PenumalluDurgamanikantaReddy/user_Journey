@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get('year');
-    const month = searchParams.get('month');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
 
     const params: Record<string, any> = {};
@@ -24,16 +24,15 @@ export async function GET(request: NextRequest) {
     // Courses attributed from AI chat/echo
     let courseFilters = `LOWER(Source) LIKE '%echo%' AND Event = 'Complete registration'`;
 
-    if (year) {
-      // Date column is a proper TIMESTAMP — extract year directly
-      chatFilters   += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      courseFilters += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      params.year = parseInt(year, 10);
+    if (startDate) {
+      chatFilters   += ` AND Date >= CAST(@startDate AS TIMESTAMP)`;
+      courseFilters += ` AND Date >= CAST(@startDate AS DATE)`;
+      params.startDate = startDate;
     }
-    if (month) {
-      chatFilters   += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      courseFilters += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      params.month = parseInt(month, 10);
+    if (endDate) {
+      chatFilters   += ` AND Date <= CAST(@endDate AS TIMESTAMP)`;
+      courseFilters += ` AND Date <= CAST(@endDate AS DATE)`;
+      params.endDate = endDate;
     }
     if (brand) {
       // echo_chat uses Referrer column for brand/page name (e.g. "Al Wujud", "She Rises")

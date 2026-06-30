@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get('year');
-    const month = searchParams.get('month');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
 
     const params: Record<string, any> = {};
@@ -23,15 +23,15 @@ export async function GET(request: NextRequest) {
     // Courses from learnnn — website/biblword traffic that converts to course registration
     let courseFilters = `(LOWER(Source) LIKE '%biblword%' OR LOWER(Medium) LIKE '%organic%' OR LOWER(Source) LIKE '%website%') AND Event = 'Complete registration'`;
 
-    if (year) {
-      siteFilters   += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      courseFilters += ` AND EXTRACT(YEAR FROM Date) = @year`;
-      params.year = parseInt(year, 10);
+    if (startDate) {
+      siteFilters   += ` AND Date >= CAST(@startDate AS DATE)`;
+      courseFilters += ` AND Date >= CAST(@startDate AS DATE)`;
+      params.startDate = startDate;
     }
-    if (month) {
-      siteFilters   += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      courseFilters += ` AND EXTRACT(MONTH FROM Date) = @month`;
-      params.month = parseInt(month, 10);
+    if (endDate) {
+      siteFilters   += ` AND Date <= CAST(@endDate AS DATE)`;
+      courseFilters += ` AND Date <= CAST(@endDate AS DATE)`;
+      params.endDate = endDate;
     }
     if (brand) {
       // analytics_biblword_articles_combined uses Platform column (e.g. "Biblword")

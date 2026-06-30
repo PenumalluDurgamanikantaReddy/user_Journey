@@ -13,8 +13,8 @@ export async function GET(request: NextRequest) {
     }
 
     const searchParams = request.nextUrl.searchParams;
-    const year = searchParams.get('year');
-    const month = searchParams.get('month');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
     // YouVersion doesn't have a brand filter in the schema — Language is used instead
     const language = searchParams.get('language');
 
@@ -22,13 +22,13 @@ export async function GET(request: NextRequest) {
 
     let filters = `Language != '-Unknown-'`;
 
-    if (year) {
-      filters += ` AND Year = @year`;
-      params.year = parseInt(year, 10);
+    if (startDate) {
+      filters += ` AND DATE(Year, Month_nr, 1) >= DATE_TRUNC(CAST(@startDate AS DATE), MONTH)`;
+      params.startDate = startDate;
     }
-    if (month) {
-      filters += ` AND Month_nr = @month`;
-      params.month = parseInt(month, 10);
+    if (endDate) {
+      filters += ` AND DATE(Year, Month_nr, 1) <= DATE_TRUNC(CAST(@endDate AS DATE), MONTH)`;
+      params.endDate = endDate;
     }
     if (language) {
       filters += ` AND LOWER(Language) LIKE LOWER(CONCAT('%', @language, '%'))`;
