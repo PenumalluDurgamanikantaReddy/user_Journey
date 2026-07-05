@@ -55,7 +55,7 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     // Decide which platforms to actually fetch
-    const allPlatforms = ['facebook', 'instagram', 'google-ads', 'youversion', 'website', 'ai'];
+    const allPlatforms = ['facebook', 'instagram', 'google-ads', 'meta-ads', 'youversion', 'website', 'ai'];
     const activePlatforms = filters.contentSources && filters.contentSources.length > 0
       ? filters.contentSources
       : allPlatforms;
@@ -63,10 +63,11 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
     // Helper: only fetch if the platform is in the active set
     const shouldFetch = (p: string) => activePlatforms.includes(p);
 
-    const [facebook, instagram, googleAds, youversion, website, aiChat] = await Promise.all([
+    const [facebook, instagram, googleAds, metaAds, youversion, website, aiChat] = await Promise.all([
       shouldFetch('facebook')   ? fetchPlatform('/api/analytics/facebook',   filters) : Promise.resolve(null),
       shouldFetch('instagram')  ? fetchPlatform('/api/analytics/instagram',  filters) : Promise.resolve(null),
       shouldFetch('google-ads') ? fetchPlatform('/api/analytics/google-ads', filters) : Promise.resolve(null),
+      shouldFetch('meta-ads')   ? fetchPlatform('/api/analytics/meta-ads',   filters) : Promise.resolve(null),
       shouldFetch('youversion') ? fetchPlatform('/api/analytics/youversion',
         filters.language ? { ...filters, language: filters.language } : filters
       ) : Promise.resolve(null),
@@ -105,6 +106,7 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
     add('facebook',   facebook,   'totalUsers',  'comments',    'dms',  'courseJoins');
     add('instagram',  instagram,  'totalUsers',  'comments',    'dms',  'courseJoins');
     add('google-ads', googleAds,  'totalUsers',  null,          null,   'courseJoins');
+    add('meta-ads',   metaAds,    'totalUsers',  null,          'dms',  'courseJoins');
     add('youversion', youversion, 'totalUsers',  null,          null,   'courseCompletions');
     add('website',    website,    'totalUsers',  'totalEvents', null,   'courseJoins');
     add('ai',         aiChat,     'totalChats',  null,          'dms',  'courseJoins');
