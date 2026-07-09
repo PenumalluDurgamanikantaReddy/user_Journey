@@ -47,14 +47,14 @@ export default function SankeyVisualization({ data }: Props) {
   const phase3Data = groupByGoal(platforms);
 
   const layout = positionPhaseBoxes(phase1Data, phase2Data, phase3Data);
-  const { phase1Boxes, phase2Boxes, phase3Boxes, totalHeight, totalWidth } = layout;
+  const { phase1Boxes, phase2Boxes, phase3Boxes, childToParentBands, totalHeight, totalWidth } = layout;
 
   // ── Flow bands ─────────────────────────────────────────────────────────────
   const c2cFlows  = buildContentToConversationFlows(phase1Boxes, phase2Boxes, platforms);
   const c2gFlows  = buildConversationToGoalFlows(phase2Boxes, phase3Boxes);
   const bands1to2 = routeFlowBands(phase1Boxes, phase2Boxes, c2cFlows);
   const bands2to3 = routeFlowBands(phase2Boxes, phase3Boxes, c2gFlows);
-  const allBands  = [...bands1to2, ...bands2to3];
+  const allBands  = [...childToParentBands, ...bands1to2, ...bands2to3];
 
   // ── Event handlers ─────────────────────────────────────────────────────────
   const handleBoxClick = (box: PhaseBox) => {
@@ -229,7 +229,12 @@ export default function SankeyVisualization({ data }: Props) {
         <svg width={totalWidth} height={totalHeight + 30} className="mx-auto transition-all duration-500"
           style={{ paddingTop: 24 }}>
           {/* Column headers — shifted down to leave room for badges */}
-          <text x={phase1Boxes[0]?.x + 90} y={44} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
+          {childToParentBands.length > 0 && (
+            <text x={phase1Boxes.filter(b => b.overlayGroup)[0]?.x + 70} y={44} textAnchor="middle" fontSize="14" fontWeight="bold" fill="#6b7280">
+              Platforms
+            </text>
+          )}
+          <text x={phase1Boxes.find(b => !b.overlayGroup)?.x ?? phase1Boxes[0]?.x + 90} y={44} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
             📱 Content
           </text>
           <text x={phase2Boxes[0]?.x + 90} y={44} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">

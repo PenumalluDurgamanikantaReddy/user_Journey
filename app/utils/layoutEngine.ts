@@ -1,6 +1,7 @@
-import { PhaseBox } from '@/app/types/sankey';
+import { PhaseBox, FlowBand, COLOR_MAP } from '@/app/types/sankey';
 
 const BOX_WIDTH = 180;
+const CHILD_BOX_WIDTH = 140;
 const MIN_BOX_HEIGHT = 80;
 const MIN_VERTICAL_SPACING = 15;
 const PHASE_HORIZONTAL_SPACING = 250;
@@ -10,8 +11,25 @@ function calculateHeight(count: number, maxCount: number): number {
   return Math.max(MIN_BOX_HEIGHT, (count / maxCount) * 300);
 }
 
-function positionColumn(data: PhaseBox[], xPosition: number, maxCount: number): PhaseBox[] {
+export interface LayoutResult {
+  phase1Boxes: PhaseBox[];
+  phase2Boxes: PhaseBox[];
+  phase3Boxes: PhaseBox[];
+  phase4Boxes: PhaseBox[];
+  /** Flow bands from overlay children to their parent box */
+  childToParentBands: FlowBand[];
+  totalHeight: number;
+  totalWidth: number;
+}
+
+function positionColumn(
+  data: PhaseBox[],
+  xPosition: number,
+  maxCount: number,
+  childColumnX?: number
+): { boxes: PhaseBox[]; childToParentFlows: { childId: string; parentId: string; childY: number; childHeight: number; parentY: number; parentHeight: number; count: number; color: string }[] } {
   const boxes: PhaseBox[] = [];
+  const childToParentFlows: { childId: string; parentId: string; childY: number; childHeight: number; parentY: number; parentHeight: number; count: number; color: string }[] = [];
   let currentY = CANVAS_PADDING;
 
   const groups: Record<string, { parent?: PhaseBox; children: PhaseBox[] }> = {};
@@ -28,12 +46,10 @@ function positionColumn(data: PhaseBox[], xPosition: number, maxCount: number): 
   const processedGroups = new Set<string>();
 
   data.forEach(item => {
-    // Skip overlay children until their parent is processed.
     if (item.overlayGroup) {
       if (processedGroups.has(item.overlayGroup)) return;
       const group = groups[item.overlayGroup];
-      if (group?.parent) return; // will be positioned with parent later.
-      // If there is no parent, handle as normal fallthrough.
+      if (group?.parent) return;
     }
 
     const group = groups[item.id];
@@ -45,29 +61,54 @@ function positionColumn(data: PhaseBox[], xPosition: number, maxCount: number): 
       const childHeights = children.map(child => calculateHeight(child.count, maxCount));
       const totalChildHeight = childHeights.reduce((sum, h) => sum + h, 0) + childGap * Math.max(0, children.length - 1);
       const reservedHeight = Math.max(parentHeight, totalChildHeight + 16);
+      const parentY = currentY + (reservedHeight - parentHeight) / 2;
       const startY = currentY + (reservedHeight - totalChildHeight) / 2;
 
       let childY = startY;
       children.forEach((child, idx) => {
         const childHeight = childHeights[idx];
-        boxes.push({
+        const childCenterY = childY + childHeight / 2;
+        const childBox = {
           ...child,
-          x: Math.max(CANVAS_PADDING, xPosition - 96),
+          x: childColumnX ?? CANVAS_PADDING,
           y: childY,
-          width: BOX_WIDTH - 32,
+          width: CHILD_BOX_WIDTH,
           height: childHeight,
+        };
+        boxes.push(childBox);
+
+        // Connect from child's right-center to a proportional position on parent's left edge
+        const proportion = totalChildHeight > 0
+          ? (childCenterY - startY) / totalChildHeight
+          : (idx + 0.5) / children.length;
+
+        childToParentFlows.push({
+          childId: child.id,
+          parentId: item.id,
+          childY: childCenterY,
+          childHeight,
+          parentY: parentY + proportion * parentHeight,
+          parentHeight,
+          count: child.count,
+          color: child.color || COLOR_MAP[child.id] || '#6b7280',
         });
+
         childY += childHeight + childGap;
       });
 
-      boxes.push({ ...item, x: xPosition, y: currentY + (reservedHeight - parentHeight) / 2, width: BOX_WIDTH, height: parentHeight });
+      boxes.push({
+        ...item,
+        x: xPosition,
+        y: parentY,
+        width: BOX_WIDTH,
+        height: parentHeight,
+      });
       currentY += reservedHeight + MIN_VERTICAL_SPACING;
       processedGroups.add(item.id);
       return;
     }
 
     if (item.overlayGroup) {
-      // child whose parent has not appeared yet, or no parent exists; skip if parent exists.
       if (group?.parent) return;
     }
 
@@ -76,7 +117,7 @@ function positionColumn(data: PhaseBox[], xPosition: number, maxCount: number): 
     currentY += height + MIN_VERTICAL_SPACING;
   });
 
-  return boxes;
+  return { boxes, childToParentFlows };
 }
 
 export function positionPhaseBoxes(
@@ -84,24 +125,54 @@ export function positionPhaseBoxes(
   phase2Data: PhaseBox[],
   phase3Data: PhaseBox[],
   phase4Data?: PhaseBox[]
-): {
-  phase1Boxes: PhaseBox[];
-  phase2Boxes: PhaseBox[];
-  phase3Boxes: PhaseBox[];
-  phase4Boxes: PhaseBox[];
-  totalHeight: number;
-  totalWidth: number;
-} {
+): LayoutResult {
   const allCounts = [
     ...phase1Data, ...phase2Data, ...phase3Data, ...(phase4Data ?? [])
   ].map(b => b.count);
   const maxCount = Math.max(...allCounts, 1);
 
-  const phase1Boxes = positionColumn(phase1Data, CANVAS_PADDING, maxCount);
-  const phase2Boxes = positionColumn(phase2Data, CANVAS_PADDING + BOX_WIDTH + PHASE_HORIZONTAL_SPACING, maxCount);
-  const phase3Boxes = positionColumn(phase3Data, CANVAS_PADDING + 2 * (BOX_WIDTH + PHASE_HORIZONTAL_SPACING), maxCount);
+  const hasChildColumn = phase1Data.some(b => b.overlayGroup);
+
+  // Compute column X positions
+  let phase1X: number;
+  let childX: number;
+
+  if (hasChildColumn) {
+    // Children on the left, Phase 1 (content) shifted right to make room
+    childX = CANVAS_PADDING;
+    phase1X = CANVAS_PADDING + CHILD_BOX_WIDTH + 80;
+  } else {
+    childX = CANVAS_PADDING;
+    phase1X = CANVAS_PADDING;
+  }
+
+  const positioned = positionColumn(phase1Data, phase1X, maxCount, childX);
+  const phase1Boxes = positioned.boxes;
+  const childFlows = positioned.childToParentFlows;
+
+  // Build FlowBand entries for child → parent connections
+  const childToParentBands: FlowBand[] = childFlows.map(f => ({
+    id: `${f.childId}->${f.parentId}`,
+    sourceId: f.childId,
+    targetId: f.parentId,
+    sourceLabel: f.childId,
+    targetLabel: f.parentId,
+    count: f.count,
+    percentage: 0,
+    color: f.color,
+    sourceY: f.childY,
+    targetY: f.parentY,
+    sourceHeight: f.childHeight,
+    targetHeight: f.parentHeight,
+  }));
+
+  const phase2X = phase1X + BOX_WIDTH + PHASE_HORIZONTAL_SPACING;
+  const phase3X = phase1X + 2 * (BOX_WIDTH + PHASE_HORIZONTAL_SPACING);
+
+  const phase2Boxes = positionColumn(phase2Data, phase2X, maxCount).boxes;
+  const phase3Boxes = positionColumn(phase3Data, phase3X, maxCount).boxes;
   const phase4Boxes = phase4Data
-    ? positionColumn(phase4Data, CANVAS_PADDING + 3 * (BOX_WIDTH + PHASE_HORIZONTAL_SPACING), maxCount)
+    ? positionColumn(phase4Data, phase1X + 3 * (BOX_WIDTH + PHASE_HORIZONTAL_SPACING), maxCount).boxes
     : [];
 
   const maxY = Math.max(
@@ -112,18 +183,17 @@ export function positionPhaseBoxes(
     0
   );
 
-  const numColumns = phase4Data ? 4 : 3;
+  const rightEdge = phase3X + BOX_WIDTH;
+  const leftEdge = hasChildColumn ? childX : phase1X;
+  const totalWidth = (rightEdge - leftEdge) + CANVAS_PADDING * 2;
 
   return {
     phase1Boxes,
     phase2Boxes,
     phase3Boxes,
     phase4Boxes,
+    childToParentBands,
     totalHeight: maxY + CANVAS_PADDING,
-    totalWidth:
-      CANVAS_PADDING +
-      numColumns * BOX_WIDTH +
-      (numColumns - 1) * PHASE_HORIZONTAL_SPACING +
-      CANVAS_PADDING,
+    totalWidth,
   };
 }

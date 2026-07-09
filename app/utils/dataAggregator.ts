@@ -237,6 +237,9 @@ export function buildContentToConversationFlows(
   const flows: FlowData[] = [];
 
   sourceBoxes.forEach(src => {
+    // Skip overlay children — they only connect to their parent box, not to conversation.
+    if (src.overlayGroup) return;
+
     // Which platforms feed this source box?
     const relevant = platforms.filter(p => {
       if (src.id === 'Social Media') return SOCIAL_MEDIA_PLATFORMS.includes(p.medium);
