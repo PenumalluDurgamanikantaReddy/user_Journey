@@ -73,6 +73,8 @@ export interface AggregatedData {
     countries?: string;
     brand?: string;
   };
+  /** conversation type filters applied (e.g. ['dm'], ['comments','courses']) */
+  conversationTypes?: string[];
 }
 
 export const COLOR_MAP: Record<string, string> = {

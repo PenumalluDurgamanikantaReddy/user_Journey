@@ -174,7 +174,7 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
     }
 
     setState({
-      data: { platforms, grandTotal, activeFilters },
+      data: { platforms, grandTotal, activeFilters, conversationTypes: filters.conversationTypes },
       loading: false,
       error: grandTotal > 0 ? null : 'No data returned from analytics APIs.',
     });

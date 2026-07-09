@@ -33,6 +33,14 @@ export default function SankeyVisualization({ data }: Props) {
   // Are any non-content filters active?
   const hasActiveFilters = !!(activeFilters.language || activeFilters.countries || activeFilters.brand);
 
+  // ── Phase boxes ────────────────────────────────────────────────────────────
+  const phase1Data = groupPlatformsByContent(platforms, expandedCategory, activeFilters);
+  const phase2Data = groupByConversationType(platforms);
+  const phase3Data = groupByGoal(platforms);
+
+  // Determine the "no data" scenario for a clearer message
+  const hasConversationFilter = data.conversationTypes && data.conversationTypes.length > 0;
+
   if (platforms.length === 0) {
     return (
       <div className="bg-[#1a1f2e] rounded-xl shadow-lg p-12 text-center">
@@ -41,10 +49,18 @@ export default function SankeyVisualization({ data }: Props) {
     );
   }
 
-  // ── Phase boxes ────────────────────────────────────────────────────────────
-  const phase1Data = groupPlatformsByContent(platforms, expandedCategory, activeFilters);
-  const phase2Data = groupByConversationType(platforms);
-  const phase3Data = groupByGoal(platforms);
+  // No conversation boxes exist even though a conversation type filter is active
+  if (hasConversationFilter && phase2Data.length === 0) {
+    const activeLabels = data.conversationTypes!.join(' or ');
+    return (
+      <div className="bg-[#1a1f2e] rounded-xl shadow-lg p-12 text-center">
+        <p className="text-gray-400 text-lg mb-2">No Data Available</p>
+        <p className="text-gray-500 text-sm">
+          No platforms have <span className="text-amber-400 font-semibold">{activeLabels}</span> data for the current selection.
+        </p>
+      </div>
+    );
+  }
 
   const layout = positionPhaseBoxes(phase1Data, phase2Data, phase3Data);
   const { phase1Boxes, phase2Boxes, phase3Boxes, childToParentBands, totalHeight, totalWidth } = layout;
