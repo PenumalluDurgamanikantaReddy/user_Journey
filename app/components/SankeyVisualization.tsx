@@ -1,8 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { PhaseBox, FlowBand, LABEL_MAP } from '@/app/types/sankey';
-import { AggregatedData } from '@/app/types/sankey';
+import { PhaseBox, FlowBand, LABEL_MAP, AggregatedData } from '@/app/types/sankey';
 import {
   groupPlatformsByContent,
   groupByConversationType,
@@ -15,22 +14,24 @@ import { positionPhaseBoxes } from '@/app/utils/layoutEngine';
 
 interface Props {
   data: AggregatedData;
-  conversationTypes?: string[];
 }
 
 function fmt(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-  if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+  if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
   return n.toLocaleString();
 }
 
-export default function SankeyVisualization({ data, conversationTypes }: Props) {
-  const [hoveredBand, setHoveredBand] = useState<string | null>(null);
-  const [tooltipData, setTooltipData] = useState<{ x: number; y: number; band: FlowBand } | null>(null);
+export default function SankeyVisualization({ data }: Props) {
+  const [hoveredBand, setHoveredBand]   = useState<string | null>(null);
+  const [tooltipData, setTooltipData]   = useState<{ x: number; y: number; band: FlowBand } | null>(null);
   const [expandedCategory, setExpanded] = useState<string | null>(null);
   const [transitioning, setTransitioning] = useState(false);
 
-  const { platforms, grandTotal } = data;
+  const { platforms, grandTotal, activeFilters } = data;
+
+  // Are any non-content filters active?
+  const hasActiveFilters = !!(activeFilters.language || activeFilters.countries || activeFilters.brand);
 
   if (platforms.length === 0) {
     return (
@@ -39,43 +40,22 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
       </div>
     );
   }
-  let newData: PlatformCounts[] = [...platforms, {
-    medium: "daily-devotionals",
-    total: 50000,
-    comments: 10000,
-    dms: 20000,
-    courses: 20000
-  }];
 
-  console.log(newData, 'newData')
   // ── Phase boxes ────────────────────────────────────────────────────────────
-  const phase1Data = groupPlatformsByContent(newData, expandedCategory);
-  const rawPhase2Data = groupByConversationType(newData);
-
-  // Map filter keys to phase2 box IDs and filter if conversationTypes is set
-  const convTypeToBoxId: Record<string, string> = {
-    comments: 'Comments',
-    dm: 'Direct Messages',
-    courses: 'Courses',
-  };
-  const phase2Data = conversationTypes && conversationTypes.length > 0
-    ? rawPhase2Data.filter(box =>
-        conversationTypes.some(t => convTypeToBoxId[t] === box.id)
-      )
-    : rawPhase2Data;
-
-  const phase3Data = groupByGoal(newData);
+  const phase1Data = groupPlatformsByContent(platforms, expandedCategory, activeFilters);
+  const phase2Data = groupByConversationType(platforms);
+  const phase3Data = groupByGoal(platforms);
 
   const layout = positionPhaseBoxes(phase1Data, phase2Data, phase3Data);
   const { phase1Boxes, phase2Boxes, phase3Boxes, totalHeight, totalWidth } = layout;
-  // console.log(phase1Boxes, 'phase1Boxes')
+
   // ── Flow bands ─────────────────────────────────────────────────────────────
-  const c2cFlows = buildContentToConversationFlows(phase1Boxes, phase2Boxes, newData);
-  const c2gFlows = buildConversationToGoalFlows(phase2Boxes, phase3Boxes);
+  const c2cFlows  = buildContentToConversationFlows(phase1Boxes, phase2Boxes, platforms);
+  const c2gFlows  = buildConversationToGoalFlows(phase2Boxes, phase3Boxes);
   const bands1to2 = routeFlowBands(phase1Boxes, phase2Boxes, c2cFlows);
   const bands2to3 = routeFlowBands(phase2Boxes, phase3Boxes, c2gFlows);
-  const allBands = [...bands1to2, ...bands2to3];
-  console.log(allBands, 'allBands')
+  const allBands  = [...bands1to2, ...bands2to3];
+
   // ── Event handlers ─────────────────────────────────────────────────────────
   const handleBoxClick = (box: PhaseBox) => {
     if (!box.isExpandable || transitioning) return;
@@ -93,7 +73,15 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
   // ── Renderers ──────────────────────────────────────────────────────────────
   const renderBox = (box: PhaseBox) => {
     const displayLabel = LABEL_MAP[box.label] || box.label;
-    const isPlaceholder = (box.id === 'Church' || box.id === 'daily-devotionals') && box.count === 0;
+    const isPlaceholder = box.id === 'Church' && box.count === 0;
+    const unfiltered = hasActiveFilters && box.unappliedFilters && box.unappliedFilters.length > 0;
+    const unfilteredLabel = unfiltered ? `⚠ ${box.unappliedFilters!.join(', ')} not applied` : null;
+
+    // Badge dimensions
+    const badgeW = 120;
+    const badgeH = 16;
+    const badgeX = box.x + box.width / 2 - badgeW / 2;
+    const badgeY = box.y - badgeH - 4;
 
     return (
       <g key={box.id} onClick={() => handleBoxClick(box)} className={box.isExpandable ? 'cursor-pointer' : ''}>
@@ -102,14 +90,28 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
             <rect x={box.x} y={box.y} width={box.width} height={box.height} rx={8} />
           </clipPath>
         </defs>
+
+        {/* Unfiltered badge — shown above the box */}
+        {unfilteredLabel && (
+          <g>
+            <rect x={badgeX} y={badgeY} width={badgeW} height={badgeH} rx={4}
+              fill="#78350f" opacity={0.9} />
+            <text x={box.x + box.width / 2} y={badgeY + badgeH - 4}
+              textAnchor="middle" fill="#fbbf24" fontSize="9" fontWeight="600">
+              {unfilteredLabel}
+            </text>
+          </g>
+        )}
+
         <rect x={box.x} y={box.y} width={box.width} height={box.height}
           fill={isPlaceholder ? 'none' : box.color}
-          stroke={isPlaceholder ? '#34d399' : 'none'}
-          strokeWidth={isPlaceholder ? 2 : 0}
-          strokeDasharray={isPlaceholder ? '6 4' : 'none'}
+          stroke={isPlaceholder ? '#34d399' : unfiltered ? '#fbbf24' : 'none'}
+          strokeWidth={isPlaceholder || unfiltered ? 1.5 : 0}
+          strokeDasharray={isPlaceholder ? '6 4' : unfiltered ? '4 3' : 'none'}
           rx={8}
-          opacity={isPlaceholder ? 0.5 : 1}
+          opacity={isPlaceholder ? 0.5 : unfiltered ? 0.75 : 1}
           className="transition-all duration-300 hover:opacity-90" />
+
         <g clipPath={`url(#clip-${box.id})`}>
           {isPlaceholder ? (
             <>
@@ -139,6 +141,7 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
             </>
           )}
         </g>
+
         {box.isExpandable && (
           <text x={box.x + box.width - 15} y={box.y + 22}
             textAnchor="middle" fill="white" fontSize="20" fontWeight="bold">
@@ -157,7 +160,7 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
 
     const srcX = src.x + src.width;
     const tgtX = tgt.x;
-    const cp = (tgtX - srcX) / 2;
+    const cp   = (tgtX - srcX) / 2;
     const path = `M ${srcX} ${band.sourceY} C ${srcX + cp} ${band.sourceY}, ${tgtX - cp} ${band.targetY}, ${tgtX} ${band.targetY}`;
     const isHovered = hoveredBand === band.id;
     const midX = (srcX + tgtX) / 2;
@@ -186,10 +189,10 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
   };
 
   // ── Totals for bottom stats ────────────────────────────────────────────────
-  const totalCourses = newData.reduce((s, p) => s + p.courses, 0);
-  const totalComments = newData.reduce((s, p) => s + p.comments, 0);
-  const totalDMs = newData.reduce((s, p) => s + p.dms, 0);
-  const convTotal = totalCourses + totalComments + totalDMs;
+  const totalCourses  = platforms.reduce((s, p) => s + p.courses, 0);
+  const totalComments = platforms.reduce((s, p) => s + p.comments, 0);
+  const totalDMs      = platforms.reduce((s, p) => s + p.dms, 0);
+  const convTotal     = totalCourses + totalComments + totalDMs;
 
   return (
     <div className="bg-[#1a1f2e] light:bg-white rounded-xl shadow-lg p-8 mb-8 transition-colors duration-300">
@@ -213,26 +216,38 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
         </p>
       )}
 
+      {/* Legend for unfiltered indicator */}
+      {hasActiveFilters && (
+        <div className="flex items-center gap-2 justify-center mb-4 text-xs text-amber-400">
+          <span className="inline-block w-3 h-3 border border-amber-400 border-dashed rounded-sm opacity-75" />
+          <span>Dashed border = this filter has no effect on this platform's data</span>
+        </div>
+      )}
+
       <div className="relative overflow-x-auto">
-        <svg width={totalWidth} height={totalHeight} className="mx-auto transition-all duration-500">
-          {/* Column headers */}
-          <text x={phase1Boxes[0]?.x + 90} y={20} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
+        {/* Extra top padding so badges above boxes don't get clipped */}
+        <svg width={totalWidth} height={totalHeight + 30} className="mx-auto transition-all duration-500"
+          style={{ paddingTop: 24 }}>
+          {/* Column headers — shifted down to leave room for badges */}
+          <text x={phase1Boxes[0]?.x + 90} y={44} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
             📱 Content
           </text>
-          <text x={phase2Boxes[0]?.x + 90} y={20} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
+          <text x={phase2Boxes[0]?.x + 90} y={44} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
             💬 Conversation
           </text>
-          <text x={phase3Boxes[0]?.x + 90} y={20} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
+          <text x={phase3Boxes[0]?.x + 90} y={44} textAnchor="middle" fontSize="18" fontWeight="bold" fill="#9ca3af">
             ⛪ Goal
           </text>
 
-          <g opacity={transitioning ? 0.3 : 1} className="transition-opacity duration-500">
-            {allBands.map(renderBand)}
-          </g>
-          <g className="transition-all duration-500">
-            {phase1Boxes.map(renderBox)}
-            {phase2Boxes.map(renderBox)}
-            {phase3Boxes.map(renderBox)}
+          <g transform="translate(0, 24)">
+            <g opacity={transitioning ? 0.3 : 1} className="transition-opacity duration-500">
+              {allBands.map(renderBand)}
+            </g>
+            <g className="transition-all duration-500">
+              {phase1Boxes.map(renderBox)}
+              {phase2Boxes.map(renderBox)}
+              {phase3Boxes.map(renderBox)}
+            </g>
           </g>
         </svg>
       </div>
@@ -257,9 +272,7 @@ export default function SankeyVisualization({ data, conversationTypes }: Props) 
           <p className="text-gray-300 mt-1">Total Users</p>
         </div>
         <div className="bg-purple-500/10 rounded-lg p-6 text-center border border-purple-500/20">
-          <p className="text-2xl font-bold text-purple-400">
-            {fmt(convTotal)}
-          </p>
+          <p className="text-2xl font-bold text-purple-400">{fmt(convTotal)}</p>
           <p className="text-gray-300 mt-1">Conversions</p>
         </div>
         <div className="bg-green-500/10 rounded-lg p-6 text-center border border-green-500/20">

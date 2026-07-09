@@ -16,11 +16,11 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
+    const language = searchParams.get('language');
 
     const params: Record<string, any> = {};
 
     let siteFilters   = `1=1`;
-    // Courses from learnnn — website/biblword traffic that converts to course registration
     let courseFilters = `(LOWER(Source) LIKE '%biblword%' OR LOWER(Medium) LIKE '%organic%' OR LOWER(Source) LIKE '%website%') AND Event = 'Complete registration'`;
 
     if (startDate) {
@@ -34,10 +34,14 @@ export async function GET(request: NextRequest) {
       params.endDate = endDate;
     }
     if (brand) {
-      // analytics_biblword_articles_combined uses Platform column (e.g. "Biblword")
       siteFilters   += ` AND LOWER(Platform) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       courseFilters += ` AND LOWER(Journey_brand_phase) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       params.brand = brand;
+    }
+    if (language) {
+      // Website uses Stream_name for the language stream (e.g. "English", "Arabic")
+      siteFilters += ` AND LOWER(Stream_name) = LOWER(@language)`;
+      params.language = language;
     }
 
     const siteTable   = '`dashboard-data-421414.globalrize_india.analytics_biblword_articles_combined`';
@@ -64,15 +68,7 @@ export async function GET(request: NextRequest) {
       WHERE ${courseFilters}
     `;
 
-    // 4. Comments — website engagement tracked via Total_events
-    //    (direct comment count not available; Total_events is closest proxy)
-    const queryComments = `
-      SELECT SUM(Total_events) AS total_events
-      FROM ${siteTable}
-      WHERE ${siteFilters}
-    `;
-
-    // 5. Top articles by users
+    // 4. Top articles by users
     const queryTopArticles = `
       SELECT Page_title, Page_path, SUM(Users) AS users, SUM(Sessions) AS sessions
       FROM ${siteTable}
@@ -84,16 +80,15 @@ export async function GET(request: NextRequest) {
 
     // Note: Website DMs are not tracked in this dataset — set to null.
 
-    const [totalResult, sessionsResult, coursesResult, commentsResult, topArticlesResult] =
+    const [totalResult, sessionsResult, coursesResult, topArticlesResult] =
       await Promise.all([
         queryBigQueryRest(queryTotal,       false, params),
         queryBigQueryRest(querySessions,    false, params),
         queryBigQueryRest(queryCourses,     false, params),
-        queryBigQueryRest(queryComments,    false, params),
         queryBigQueryRest(queryTopArticles, false, params),
       ]);
 
-    const anyFailed = [totalResult, sessionsResult, coursesResult, commentsResult, topArticlesResult]
+    const anyFailed = [totalResult, sessionsResult, coursesResult, topArticlesResult]
       .some(r => !r.success);
 
     if (anyFailed) {
@@ -104,7 +99,6 @@ export async function GET(request: NextRequest) {
             totalError:       totalResult.error,
             sessionsError:    sessionsResult.error,
             coursesError:     coursesResult.error,
-            commentsError:    commentsResult.error,
             topArticlesError: topArticlesResult.error,
           },
         },
@@ -118,7 +112,7 @@ export async function GET(request: NextRequest) {
         totalUsers:   totalResult.data[0]?.total_users       || 0,
         sessions:     sessionsResult.data[0]?.total_sessions || 0,
         courseJoins:  coursesResult.data[0]?.course_joins    || 0,
-        totalEvents:  commentsResult.data[0]?.total_events   || 0, // proxy for engagement/comments
+        totalEvents:  0,
         topArticles:  topArticlesResult.data,
         // DMs not available for website
         dms: null,

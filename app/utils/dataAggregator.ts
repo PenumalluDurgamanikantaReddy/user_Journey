@@ -25,19 +25,38 @@ function mediumLabel(medium: Medium): string {
 
 export function groupPlatformsByContent(
   platforms: PlatformCounts[],
-  expandedCategory: string | null
+  expandedCategory: string | null,
+  activeFilters?: { language?: string; countries?: string; brand?: string }
 ): PhaseBox[] {
   const total = platforms.reduce((s, p) => s + p.total, 0);
   if (total === 0) return [];
 
+  // Helper: determine which active filters were NOT applied to a set of platforms
+  const getUnapplied = (mediums: Medium[]): string[] => {
+    const unapplied: string[] = [];
+    if (!activeFilters) return unapplied;
+    const allApplied = mediums.flatMap(m => {
+      const p = platforms.find(pl => pl.medium === m);
+      return p?.appliedFilters ?? [];
+    });
+    if (activeFilters.language && !allApplied.includes('language'))   unapplied.push('Language');
+    if (activeFilters.countries && !allApplied.includes('country'))   unapplied.push('Country');
+    if (activeFilters.brand    && !allApplied.includes('brand'))      unapplied.push('Brand');
+    return [...new Set(unapplied)];
+  };
+
   const normalised = expandedCategory?.toLowerCase().replace(/\s+/g, '-');
 
-  // Expanded Social Media: show Facebook / Instagram / Twitter individually
+  // Expanded Social Media: show Facebook / Instagram / Twitter individually,
+  // while keeping the other content boxes visible.
   if (normalised === 'social-media') {
-    return SOCIAL_MEDIA_PLATFORMS.flatMap(medium => {
+    const boxes: PhaseBox[] = [];
+
+    // Create child boxes (Facebook/Instagram/Twitter) as overlay children
+    SOCIAL_MEDIA_PLATFORMS.forEach((medium, idx) => {
       const p = platforms.find(pl => pl.medium === medium);
-      if (!p || p.total === 0) return [];
-      return [{
+      if (!p || p.total === 0) return;
+      boxes.push({
         id: medium,
         label: mediumLabel(medium),
         count: p.total,
@@ -46,13 +65,60 @@ export function groupPlatformsByContent(
         x: 0, y: 0, width: 0, height: 0,
         isExpandable: false,
         medium,
-      } as PhaseBox];
+        appliedFilters: p.appliedFilters,
+        unappliedFilters: getUnapplied([medium]),
+        overlayGroup: 'Social Media',
+        overlayIndex: idx,
+      } as PhaseBox);
     });
+
+    // Parent Social Media box (kept on top)
+    const socialPlatforms = SOCIAL_MEDIA_PLATFORMS.filter(m => platforms.find(p => p.medium === m && p.total > 0));
+    const socialTotal = platforms
+      .filter(p => SOCIAL_MEDIA_PLATFORMS.includes(p.medium))
+      .reduce((s, p) => s + p.total, 0);
+    if (socialTotal > 0) {
+      boxes.push({
+        id: 'Social Media',
+        label: 'Social Media',
+        count: socialTotal,
+        percentage: (socialTotal / total) * 100,
+        color: COLOR_MAP['facebook'],
+        x: 0, y: 0, width: 0, height: 0,
+        isExpandable: true,
+        unappliedFilters: getUnapplied(socialPlatforms),
+      });
+    }
+
+    // Add remaining individual boxes so they remain visible
+    const addIndividualBox = (medium: Medium) => {
+      const p = platforms.find(pl => pl.medium === medium);
+      if (!p || p.total === 0) return;
+      boxes.push({
+        id: medium,
+        label: mediumLabel(medium),
+        count: p.total,
+        percentage: (p.total / total) * 100,
+        color: COLOR_MAP[medium] || '#6b7280',
+        x: 0, y: 0, width: 0, height: 0,
+        isExpandable: false,
+        medium,
+        appliedFilters: p.appliedFilters,
+        unappliedFilters: getUnapplied([medium]),
+      } as PhaseBox);
+    };
+
+    addIndividualBox('google-ads');
+    addIndividualBox('meta-ads');
+    ['youversion', 'website', 'ai', 'daily-devotionals'].forEach(addIndividualBox);
+
+    return boxes;
   }
 
   const boxes: PhaseBox[] = [];
 
   // 1. Social Media grouped (Facebook + Instagram + Twitter)
+  const socialPlatforms = SOCIAL_MEDIA_PLATFORMS.filter(m => platforms.find(p => p.medium === m && p.total > 0));
   const socialTotal = platforms
     .filter(p => SOCIAL_MEDIA_PLATFORMS.includes(p.medium))
     .reduce((s, p) => s + p.total, 0);
@@ -65,6 +131,7 @@ export function groupPlatformsByContent(
       color: COLOR_MAP['facebook'],
       x: 0, y: 0, width: 0, height: 0,
       isExpandable: true,
+      unappliedFilters: getUnapplied(socialPlatforms),
     });
   }
 
@@ -80,10 +147,12 @@ export function groupPlatformsByContent(
       x: 0, y: 0, width: 0, height: 0,
       isExpandable: false,
       medium: 'google-ads',
+      appliedFilters: googleAds.appliedFilters,
+      unappliedFilters: getUnapplied(['google-ads']),
     });
   }
 
-  // 3. Meta Ads — individual box (paid ads from facebook_ads_combined_conversions)
+  // 3. Meta Ads — individual box
   const metaAds = platforms.find(p => p.medium === 'meta-ads');
   if (metaAds && metaAds.total > 0) {
     boxes.push({
@@ -95,6 +164,8 @@ export function groupPlatformsByContent(
       x: 0, y: 0, width: 0, height: 0,
       isExpandable: false,
       medium: 'meta-ads',
+      appliedFilters: metaAds.appliedFilters,
+      unappliedFilters: getUnapplied(['meta-ads']),
     });
   }
 
@@ -112,6 +183,8 @@ export function groupPlatformsByContent(
       x: 0, y: 0, width: 0, height: 0,
       isExpandable: false,
       medium,
+      appliedFilters: p.appliedFilters,
+      unappliedFilters: getUnapplied([medium]),
     });
   });
 

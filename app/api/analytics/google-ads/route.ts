@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
+    const countries = searchParams.get('countries');
+    const language = searchParams.get('language');
 
     const params: Record<string, any> = {};
 
@@ -30,9 +32,33 @@ export async function GET(request: NextRequest) {
       params.endDate = endDate;
     }
     if (brand) {
-      // google_ads uses Account or Campaign_course to identify brand
       adsFilters += ` AND (LOWER(Account) LIKE LOWER(CONCAT('%', @brand, '%')) OR LOWER(Campaign) LIKE LOWER(CONCAT('%', @brand, '%')))`;
       params.brand = brand;
+    }
+    if (countries) {
+      // Country_Territory stores values like "United States", "United Kingdom", etc.
+      // We map our short country codes to BigQuery's full country names
+      const countryNameMap: Record<string, string> = {
+        'USA':       'United States',
+        'UK':        'United Kingdom',
+        'Brazil':    'Brazil',
+        'India':     'India',
+        'Germany':   'Germany',
+        'Spain':     'Spain',
+        'China':     'China',
+        'Japan':     'Japan',
+        'Australia': 'Australia',
+      };
+      const countryList = countries.split(',')
+        .map(c => countryNameMap[c.trim()] || c.trim())
+        .map(c => `'${c.replace(/'/g, "''")}'`)
+        .join(', ');
+      adsFilters += ` AND Country_Territory IN (${countryList})`;
+    }
+    if (language) {
+      // Google Ads uses Campaign_language (e.g. "Arabic", "English")
+      adsFilters += ` AND LOWER(Campaign_language) = LOWER(@language)`;
+      params.language = language;
     }
 
     const adsTable = '`dashboard-data-421414.globalrize_india.google_ads_combined_conversions`';

@@ -80,7 +80,7 @@ function BigQueryRunner({ isAuthenticated }: { isAuthenticated: boolean }) {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+      {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
         <h2 className="text-xl font-bold text-gray-100 flex items-center gap-2">
           ⚡ BigQuery REST Query Explorer
         </h2>
@@ -123,7 +123,7 @@ function BigQueryRunner({ isAuthenticated }: { isAuthenticated: boolean }) {
             'Run Query'
           )}
         </button>
-      </div>
+      </div> */}
 
       {error && (
         <div className="bg-red-950/30 border border-red-800/40 rounded-xl p-4 text-red-400 text-sm mt-6 animate-fadeIn">
@@ -230,11 +230,10 @@ function HomeContent() {
     startDate,
     endDate,
     brand: filters.brands.length === 1 ? filters.brands[0] : undefined,
-    // Language filter — only applicable to YouVersion; send when exactly one language selected
-    language: filters.languages.length === 1 ? filters.languages[0] : undefined,
-    // Content sources — skip fetching unchecked platforms
+    language: filters.languages.length >= 1 ? filters.languages[0] : undefined,
+    // Country — only Google Ads supports this; pass as comma-separated string
+    countries: filters.countries.length > 0 ? filters.countries.join(',') : undefined,
     contentSources: filters.contentSources.length > 0 ? filters.contentSources : undefined,
-    // Conversation types — zero out unchecked types in aggregation
     conversationTypes: filters.conversationTypes.length > 0 ? filters.conversationTypes : undefined,
   };
 

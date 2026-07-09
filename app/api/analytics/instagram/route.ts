@@ -16,14 +16,12 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
+    const language = searchParams.get('language');
 
     const params: Record<string, any> = {};
 
-    // Filters for post metrics table
     let postFilters = `1=1`;
-    // Filters for courses (learnnn events)
     let courseFilters = `LOWER(Source) LIKE '%instagram%' AND Event = 'Complete registration'`;
-    // Filters for engagement metrics table
     let engagementFilters = `1=1`;
 
     if (startDate) {
@@ -39,11 +37,16 @@ export async function GET(request: NextRequest) {
       params.endDate = endDate;
     }
     if (brand) {
-      // Instagram tables use Name column for brand (e.g. "She Rises", "Al-Kitaab")
       postFilters       += ` AND LOWER(Name) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       engagementFilters += ` AND LOWER(Name) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       courseFilters     += ` AND LOWER(Journey_brand_phase) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       params.brand = brand;
+    }
+    if (language) {
+      // Instagram uses Page_language (language of the Instagram page/account)
+      postFilters       += ` AND LOWER(Page_language) = LOWER(@language)`;
+      engagementFilters += ` AND LOWER(Page_language) = LOWER(@language)`;
+      params.language = language;
     }
 
     const postMetricsTable   = '`dashboard-data-421414.globalrize_india.instagram_insights_combined_post_metrics`';
@@ -58,11 +61,11 @@ export async function GET(request: NextRequest) {
       WHERE ${postFilters}
     `;
 
-    // 2. Comments — sum of Media_comments from post metrics
+    // 2. Comments — sum of Engagements from engagement_metrics where Engagement_type = 'Comments'
     const queryComments = `
-      SELECT SUM(Media_comments) AS total_comments
-      FROM ${postMetricsTable}
-      WHERE ${postFilters}
+      SELECT SUM(Engagements) AS total_comments
+      FROM ${engagementTable}
+      WHERE Engagement_type = 'Comments' AND ${engagementFilters}
     `;
 
     // 3. DMs — Instagram doesn't expose DMs directly in insights;

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { queryBigQueryRest } from '@/app/utils/bigqueryRest';
 import { getSession } from '@/app/utils/session';
 
+// Single source of truth — Meta Ads exclusively owns this table.
+// Social media (Facebook, Instagram) no longer reads from it.
 const adTable = '`dashboard-data-421414.globalrize_india.facebook_ads_combined_conversions`';
 
 export async function GET(request: NextRequest) {
@@ -52,7 +54,7 @@ export async function GET(request: NextRequest) {
     const has = (name: string) => cols.includes(name);
 
     // ── Step 2: build query using only confirmed columns ───────────────────
-    // Total users — Reach preferred, else Impressions, else row count
+    // Total users — use Reach as the single content metric
     const totalExpr = has('Reach')
       ? 'SUM(Reach)'
       : has('Impressions')
@@ -109,6 +111,8 @@ export async function GET(request: NextRequest) {
         dms:         Number(row.total_dms    ?? 0),
         courseJoins: Number(row.course_joins ?? 0),
         comments:    null,
+        // expose detected columns for debugging/inspection
+        detectedCols: cols,
       },
     });
 

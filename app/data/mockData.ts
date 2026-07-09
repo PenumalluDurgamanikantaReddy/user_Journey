@@ -1,4 +1,4 @@
-export type Medium = 'facebook' | 'instagram' | 'twitter' | 'google-ads' | 'meta-ads' | 'youversion' | 'website' | 'ai' | 'daily-devotionals';
+export type Medium = 'social-media' | 'facebook' | 'instagram' | 'twitter' | 'google-ads' | 'meta-ads' | 'youversion' | 'website' | 'ai' | 'daily-devotionals';
 export type Phase = 'evangelism' | 'discipleship' | 'leadership';
 export type ConversationType = 'comments' | 'dm' | 'courses';
 export type Goal = 'church';
@@ -22,14 +22,13 @@ export interface User {
 
 // Mock data simulating Excel sheets backend
 export const mockUsers: User[] = [
-  // Facebook users
-  { id: '1', name: 'John Doe', email: 'john@example.com', medium: 'facebook', conversationType: 'comments', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-01-15', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 75 },
-  { id: '2', name: 'Maria Garcia', email: 'maria@example.com', medium: 'facebook', conversationType: 'dm', language: 'Spanish', brand: 'Biblword', country: 'Spain', date: '2024-01-20', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 90 },
-  { id: '3', name: 'Ahmed Ali', email: 'ahmed@example.com', medium: 'facebook', conversationType: 'comments', language: 'Arabic', brand: 'AlKitab', country: 'USA', date: '2024-02-05', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 65 },
+  // Social Media users (combined Facebook + Instagram)
+  { id: '1', name: 'John Doe', email: 'john@example.com', medium: 'social-media', conversationType: 'comments', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-01-15', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 75 },
+  { id: '2', name: 'Maria Garcia', email: 'maria@example.com', medium: 'social-media', conversationType: 'dm', language: 'Spanish', brand: 'Biblword', country: 'Spain', date: '2024-01-20', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 90 },
+  { id: '3', name: 'Ahmed Ali', email: 'ahmed@example.com', medium: 'social-media', conversationType: 'comments', language: 'Arabic', brand: 'AlKitab', country: 'USA', date: '2024-02-05', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 65 },
   
-  // Instagram users
-  { id: '4', name: 'Sarah Smith', email: 'sarah@example.com', medium: 'instagram', conversationType: 'dm', language: 'English', brand: 'SheRises', country: 'UK', date: '2024-02-10', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 80 },
-  { id: '5', name: 'Lucas Silva', email: 'lucas@example.com', medium: 'instagram', conversationType: 'comments', language: 'Portuguese', brand: 'Biblword', country: 'Brazil', date: '2024-02-15', status: 'inactive', phase: 'evangelism', goal: 'church', engagementLevel: 45 },
+  { id: '4', name: 'Sarah Smith', email: 'sarah@example.com', medium: 'social-media', conversationType: 'dm', language: 'English', brand: 'SheRises', country: 'UK', date: '2024-02-10', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 80 },
+  { id: '5', name: 'Lucas Silva', email: 'lucas@example.com', medium: 'social-media', conversationType: 'comments', language: 'Portuguese', brand: 'Biblword', country: 'Brazil', date: '2024-02-15', status: 'inactive', phase: 'evangelism', goal: 'church', engagementLevel: 45 },
   
   // Twitter users
   { id: '16', name: 'Tom Wilson', email: 'tom@example.com', medium: 'twitter', conversationType: 'comments', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-02-18', status: 'active', phase: 'evangelism', goal: 'church', engagementLevel: 68 },
@@ -64,10 +63,10 @@ export const mockUsers: User[] = [
   
   // Adding courses conversation type to other mediums
   // Facebook with courses
-  { id: '23', name: 'Robert Lee', email: 'robert@example.com', medium: 'facebook', conversationType: 'courses', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-04-15', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 81 },
+  { id: '23', name: 'Robert Lee', email: 'robert@example.com', medium: 'social-media', conversationType: 'courses', language: 'English', brand: 'Biblword', country: 'USA', date: '2024-04-15', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 81 },
   
-  // Instagram with courses
-  { id: '24', name: 'Elena Popov', email: 'elena@example.com', medium: 'instagram', conversationType: 'courses', language: 'English', brand: 'SheRises', country: 'UK', date: '2024-04-16', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 87 },
+  // Social Media with courses
+  { id: '24', name: 'Elena Popov', email: 'elena@example.com', medium: 'social-media', conversationType: 'courses', language: 'English', brand: 'SheRises', country: 'UK', date: '2024-04-16', status: 'active', phase: 'leadership', goal: 'church', engagementLevel: 87 },
   
   // Twitter with courses
   { id: '25', name: 'Omar Hassan', email: 'omar@example.com', medium: 'twitter', conversationType: 'courses', language: 'Arabic', brand: 'AlKitab', country: 'USA', date: '2024-04-17', status: 'active', phase: 'discipleship', goal: 'church', engagementLevel: 73 },
@@ -108,6 +107,7 @@ export const GOALS: Goal[] = ['church'];
 
 export const getMediumLabel = (medium: Medium): string => {
   const labels: Record<Medium, string> = {
+    'social-media': 'Social Media',
     facebook: 'Facebook',
     instagram: 'Instagram',
     twitter: 'Twitter',

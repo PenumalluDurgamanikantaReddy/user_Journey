@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     const brand = searchParams.get('brand');
+    const language = searchParams.get('language');
 
     const params: Record<string, any> = {};
 
@@ -35,10 +36,14 @@ export async function GET(request: NextRequest) {
       params.endDate = endDate;
     }
     if (brand) {
-      // echo_chat uses Referrer column for brand/page name (e.g. "Al Wujud", "She Rises")
       chatFilters   += ` AND LOWER(Referrer) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       courseFilters += ` AND LOWER(Journey_brand_phase) LIKE LOWER(CONCAT('%', @brand, '%'))`;
       params.brand = brand;
+    }
+    if (language) {
+      // echo_chat has a Language column with values like "English", "Arabic"
+      chatFilters += ` AND LOWER(Language) = LOWER(@language)`;
+      params.language = language;
     }
 
     const chatTable   = '`dashboard-data-421414.globalrize_india.echo_chat_statistics_combined`';

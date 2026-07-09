@@ -12,8 +12,16 @@ export interface PhaseBox {
   width: number;
   height: number;
   isExpandable?: boolean;
+  /** when true this box is rendered as part of an overlay group (e.g. Facebook/Instagram behind Social Media) */
+  overlayGroup?: string;
+  /** order index within an overlay group */
+  overlayIndex?: number;
   children?: string[];
   medium?: Medium;
+  /** filters that were applied to this box's data query */
+  appliedFilters?: string[];
+  /** filters that are active but were NOT applied to this box */
+  unappliedFilters?: string[];
 }
 
 export interface FlowBand {
@@ -51,12 +59,20 @@ export interface PlatformCounts {
   comments: number;
   dms: number;
   courses: number;
+  /** which filters were actually applied to this platform's query */
+  appliedFilters: string[];
 }
 
 export interface AggregatedData {
   platforms: PlatformCounts[];
   /** sum of all platform totals */
   grandTotal: number;
+  /** which filters are currently active in the UI */
+  activeFilters: {
+    language?: string;
+    countries?: string;
+    brand?: string;
+  };
 }
 
 export const COLOR_MAP: Record<string, string> = {

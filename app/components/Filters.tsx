@@ -8,7 +8,7 @@ interface FiltersProps {
   onFilterChange: (filters: FilterState) => void;
 }
 
-const CONTENT_SOURCES: Medium[] = ['facebook', 'instagram', 'twitter', 'google-ads', 'meta-ads', 'youversion', 'website', 'ai', 'daily-devotionals'];
+const CONTENT_SOURCES: Medium[] = ['social-media', 'twitter', 'google-ads', 'meta-ads', 'youversion', 'website', 'ai', 'daily-devotionals'];
 
 interface FilterDropdownProps<T> {
   title: string;
@@ -210,13 +210,18 @@ export default function Filters({ filters, onFilterChange }: FiltersProps) {
       <div>
         <h3 className="text-lg font-semibold text-gray-300 mb-4 border-l-4 border-purple-500 pl-3">Brand Filters</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <FilterDropdown
-            title="Country"
-            options={COUNTRIES}
-            selectedOptions={filters.countries}
-            onToggle={handleCountryToggle}
-            colorClass="checked:bg-blue-400 checked:border-blue-400"
-          />
+          <div className="relative">
+            <FilterDropdown
+              title="Country"
+              options={COUNTRIES}
+              selectedOptions={filters.countries}
+              onToggle={handleCountryToggle}
+              colorClass="checked:bg-blue-400 checked:border-blue-400"
+            />
+            <span className="absolute -top-1 -right-1 bg-amber-500/80 text-gray-900 text-[10px] font-bold px-1.5 py-0.5 rounded-full leading-none">
+              Google Ads only
+            </span>
+          </div>
           <FilterDropdown
             title="Language"
             options={LANGUAGES}

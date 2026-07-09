@@ -13,11 +13,69 @@ function calculateHeight(count: number, maxCount: number): number {
 function positionColumn(data: PhaseBox[], xPosition: number, maxCount: number): PhaseBox[] {
   const boxes: PhaseBox[] = [];
   let currentY = CANVAS_PADDING;
+
+  const groups: Record<string, { parent?: PhaseBox; children: PhaseBox[] }> = {};
   data.forEach(item => {
+    if (item.overlayGroup) {
+      groups[item.overlayGroup] = groups[item.overlayGroup] || { children: [] };
+      groups[item.overlayGroup].children.push(item);
+    }
+    if (groups[item.id]) {
+      groups[item.id].parent = item;
+    }
+  });
+
+  const processedGroups = new Set<string>();
+
+  data.forEach(item => {
+    // Skip overlay children until their parent is processed.
+    if (item.overlayGroup) {
+      if (processedGroups.has(item.overlayGroup)) return;
+      const group = groups[item.overlayGroup];
+      if (group?.parent) return; // will be positioned with parent later.
+      // If there is no parent, handle as normal fallthrough.
+    }
+
+    const group = groups[item.id];
+    if (group?.parent === item && !processedGroups.has(item.id)) {
+      const children = group.children.slice().sort((a, b) => (a.overlayIndex ?? 0) - (b.overlayIndex ?? 0));
+      const parentHeight = calculateHeight(item.count, maxCount);
+
+      const childGap = 10;
+      const childHeights = children.map(child => calculateHeight(child.count, maxCount));
+      const totalChildHeight = childHeights.reduce((sum, h) => sum + h, 0) + childGap * Math.max(0, children.length - 1);
+      const reservedHeight = Math.max(parentHeight, totalChildHeight + 16);
+      const startY = currentY + (reservedHeight - totalChildHeight) / 2;
+
+      let childY = startY;
+      children.forEach((child, idx) => {
+        const childHeight = childHeights[idx];
+        boxes.push({
+          ...child,
+          x: Math.max(CANVAS_PADDING, xPosition - 96),
+          y: childY,
+          width: BOX_WIDTH - 32,
+          height: childHeight,
+        });
+        childY += childHeight + childGap;
+      });
+
+      boxes.push({ ...item, x: xPosition, y: currentY + (reservedHeight - parentHeight) / 2, width: BOX_WIDTH, height: parentHeight });
+      currentY += reservedHeight + MIN_VERTICAL_SPACING;
+      processedGroups.add(item.id);
+      return;
+    }
+
+    if (item.overlayGroup) {
+      // child whose parent has not appeared yet, or no parent exists; skip if parent exists.
+      if (group?.parent) return;
+    }
+
     const height = calculateHeight(item.count, maxCount);
     boxes.push({ ...item, x: xPosition, y: currentY, width: BOX_WIDTH, height });
     currentY += height + MIN_VERTICAL_SPACING;
   });
+
   return boxes;
 }
 
