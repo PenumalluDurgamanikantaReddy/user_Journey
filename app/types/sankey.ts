@@ -78,33 +78,32 @@ export interface AggregatedData {
 }
 
 export const COLOR_MAP: Record<string, string> = {
-  // Phase 1 - Content sources (individual platforms)
-  facebook: '#3b82f6',
-  instagram: '#ec4899',
-  twitter: '#1da1f2',
-  'google-ads': '#f34aff',
-  'meta-ads': '#0668e1',
-  youversion: '#8b5cf6',
-  website: '#10b981',
-  ai: '#06b6d4',
-  'daily-devotionals': '#ef4444',
+  // ── Content boxes (Phase 1) — light blue tone ──────────────────────────────
+  facebook:            '#7eb3e8',
+  instagram:           '#7eb3e8',
+  twitter:             '#7eb3e8',
+  'google-ads':        '#7eb3e8',
+  'meta-ads':          '#7eb3e8',
+  youversion:          '#7eb3e8',
+  website:             '#7eb3e8',
+  ai:                  '#7eb3e8',
+  'daily-devotionals': '#7eb3e8',
+  'Social Media':      '#7eb3e8',
+  'social-media':      '#7eb3e8',
+  Ads:                 '#7eb3e8',
+  ads:                 '#7eb3e8',
 
-  // Phase 1 - Categories (grouped)
-  'social-media': '#3b82f6',
-  'Social Media': '#3b82f6',
-  ads: '#f59e0b',
-  Ads: '#f59e0b',
+  // ── Conversation boxes (Phase 2) — medium blue tone ───────────────────────
+  Comments:          '#3b82f6',
+  comments:          '#3b82f6',
+  'Direct Messages': '#3b82f6',
+  dm:                '#3b82f6',
+  Courses:           '#3b82f6',
+  courses:           '#3b82f6',
 
-  // Phase 2 - Conversation types
-  comments: '#60a5fa',
-  dm: '#a78bfa',
-  'Direct Messages': '#a78bfa',
-  Comments: '#60a5fa',
-  Courses: '#ef4444',
-
-  // Phase 3 - Goals
-  church: '#34d399',
-  Church: '#34d399',
+  // ── Goal box (Phase 3) — deep blue tone ───────────────────────────────────
+  Church: '#1e3a8a',
+  church: '#1e3a8a',
 };
 
 export const LABEL_MAP: Record<string, string> = {

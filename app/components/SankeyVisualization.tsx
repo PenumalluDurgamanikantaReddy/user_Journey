@@ -121,18 +121,18 @@ export default function SankeyVisualization({ data }: Props) {
 
         <rect x={box.x} y={box.y} width={box.width} height={box.height}
           fill={isPlaceholder ? 'none' : box.color}
-          stroke={isPlaceholder ? '#34d399' : unfiltered ? '#fbbf24' : 'none'}
+          stroke={isPlaceholder ? '#1e3a8a' : unfiltered ? '#fbbf24' : 'none'}
           strokeWidth={isPlaceholder || unfiltered ? 1.5 : 0}
           strokeDasharray={isPlaceholder ? '6 4' : unfiltered ? '4 3' : 'none'}
           rx={8}
-          opacity={isPlaceholder ? 0.5 : unfiltered ? 0.75 : 1}
+          opacity={isPlaceholder ? 0.7 : unfiltered ? 0.75 : 1}
           className="transition-all duration-300 hover:opacity-90" />
 
         <g clipPath={`url(#clip-${box.id})`}>
           {isPlaceholder ? (
             <>
               <text x={box.x + box.width / 2} y={box.y + box.height / 2 - 8}
-                textAnchor="middle" fill="#34d399" fontSize="11" fontWeight="600">
+                textAnchor="middle" fill="#93b8e8" fontSize="11" fontWeight="600">
                 {displayLabel}
               </text>
               <text x={box.x + box.width / 2} y={box.y + box.height / 2 + 8}
@@ -185,7 +185,7 @@ export default function SankeyVisualization({ data }: Props) {
     return (
       <g key={band.id}>
         <path d={path} stroke={band.color}
-          strokeWidth={Math.max(2, Math.min(30, band.sourceHeight))}
+          strokeWidth={Math.max(1, Math.min(8, band.sourceHeight * 0.15))}
           fill="none" strokeLinecap="round" strokeDasharray="16 12"
           opacity={isHovered ? 0.85 : 0.45}
           style={{ animation: `${isHovered ? 'flow-fast' : 'flow'} 1s linear infinite` }}
@@ -266,7 +266,9 @@ export default function SankeyVisualization({ data }: Props) {
             </g>
             <g className="transition-all duration-500">
               {phase1Boxes.map(renderBox)}
+        
               {phase2Boxes.map(renderBox)}
+          
               {phase3Boxes.map(renderBox)}
             </g>
           </g>

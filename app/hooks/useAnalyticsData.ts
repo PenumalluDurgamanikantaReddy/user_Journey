@@ -151,7 +151,7 @@ export function useAnalyticsData(filters: AnalyticsFilters): AnalyticsState {
     };
 
     add('facebook',   facebook,   'totalUsers',  'comments',    'dms',  'courseJoins');
-    add('instagram',  instagram,  'totalUsers',  'comments',    'dms',  'courseJoins');
+    add('instagram',  instagram,  'totalUsers',  'comments',    null,   'courseJoins');
     add('google-ads', googleAds,  'totalUsers',  null,          null,   'courseJoins');
     add('meta-ads',   metaAds,    'totalUsers',  null,          'dms',  'courseJoins');
     add('youversion', youversion, 'totalUsers',  null,          null,   'courseCompletions');

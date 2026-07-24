@@ -68,38 +68,28 @@ export async function GET(request: NextRequest) {
       WHERE Engagement_type = 'Comments' AND ${engagementFilters}
     `;
 
-    // 3. DMs — Instagram doesn't expose DMs directly in insights;
-    //    using Media_follows as the closest proxy (people who followed after seeing a post)
-    //    This is the best available signal for direct intent from Instagram posts.
-    const queryDMs = `
-      SELECT SUM(Media_follows) AS total_dms
-      FROM ${postMetricsTable}
-      WHERE ${postFilters}
-    `;
-
-    // 4. Course joins attributed to Instagram (via learnnn events)
+    // 3. Course joins attributed to Instagram (via learnnn events)
     const queryCourses = `
       SELECT SUM(Users) AS course_joins
       FROM ${courseTable}
       WHERE ${courseFilters}
     `;
 
-    // 5. Follower count (latest snapshot per brand/username)
+    // 4. Follower count (latest snapshot per brand/username)
     const queryFollowers = `
       SELECT SUM(Current_Followers) AS total_followers
       FROM ${followerTable}
       WHERE ${postFilters}
     `;
 
-    const [totalResult, commentsResult, dmsResult, coursesResult, followersResult] = await Promise.all([
+    const [totalResult, commentsResult, coursesResult, followersResult] = await Promise.all([
       queryBigQueryRest(queryTotal, false, params),
       queryBigQueryRest(queryComments, false, params),
-      queryBigQueryRest(queryDMs, false, params),
       queryBigQueryRest(queryCourses, false, params),
       queryBigQueryRest(queryFollowers, false, params),
     ]);
 
-    const anyFailed = [totalResult, commentsResult, dmsResult, coursesResult, followersResult]
+    const anyFailed = [totalResult, commentsResult, coursesResult, followersResult]
       .some(r => !r.success);
 
     if (anyFailed) {
@@ -109,7 +99,6 @@ export async function GET(request: NextRequest) {
           details: {
             totalError:     totalResult.error,
             commentsError:  commentsResult.error,
-            dmsError:       dmsResult.error,
             coursesError:   coursesResult.error,
             followersError: followersResult.error,
           },
@@ -123,7 +112,6 @@ export async function GET(request: NextRequest) {
       data: {
         totalUsers:   totalResult.data[0]?.total_users    || 0,
         comments:     commentsResult.data[0]?.total_comments || 0,
-        dms:          dmsResult.data[0]?.total_dms        || 0,  // proxy: post follows
         courseJoins:  coursesResult.data[0]?.course_joins || 0,
         followers:    followersResult.data[0]?.total_followers || 0,
       },

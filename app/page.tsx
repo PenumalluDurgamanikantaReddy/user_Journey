@@ -80,7 +80,7 @@ function BigQueryRunner({ isAuthenticated }: { isAuthenticated: boolean }) {
         </div>
       )}
 
-      {/* <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mb-4">
         <h2 className="text-xl font-bold text-gray-100 flex items-center gap-2">
           ⚡ BigQuery REST Query Explorer
         </h2>
@@ -123,7 +123,7 @@ function BigQueryRunner({ isAuthenticated }: { isAuthenticated: boolean }) {
             'Run Query'
           )}
         </button>
-      </div> */}
+      </div>
 
       {error && (
         <div className="bg-red-950/30 border border-red-800/40 rounded-xl p-4 text-red-400 text-sm mt-6 animate-fadeIn">
@@ -185,12 +185,21 @@ function HomeContent() {
     phases: [],
     conversationTypes: [],
     goals: [],
-    // Use a wide open range so live data (dated today) is never filtered out by default
     dateRange: { start: '2020-01', end: '2099-12' }
   });
 
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  console.log(filters, 'filters')
+  // Count active filters for the badge
+  const activeFilterCount = [
+    filters.countries,
+    filters.languages,
+    filters.brands,
+    filters.contentSources,
+    filters.conversationTypes,
+    filters.goals,
+    filters.phases,
+  ].reduce((sum, arr) => sum + arr.length, 0);
   const [session, setSession] = useState<SessionState | null>(null);
   const [authChecked, setAuthChecked] = useState(false);
 
@@ -248,8 +257,64 @@ function HomeContent() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
           </div>
-          <AuthStatus />
+          <div className="flex items-center gap-3">
+            {/* Filter icon button */}
+            <button
+              onClick={() => setFiltersOpen(true)}
+              className="relative flex items-center gap-2 px-4 py-2 bg-[#1a1f2e] border border-gray-700 hover:border-blue-500 text-gray-300 hover:text-white rounded-xl transition-all duration-200"
+              title="Open Filters"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+              </svg>
+              <span className="text-sm font-medium">Filters</span>
+              {activeFilterCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+            <AuthStatus />
+          </div>
         </div>
+
+        {/* Filter Drawer */}
+        {filtersOpen && (
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+              onClick={() => setFiltersOpen(false)}
+            />
+            {/* Drawer */}
+            <div className="fixed top-0 right-0 h-full w-full max-w-xs bg-[#0f1419] border-l border-gray-700 z-50 overflow-y-auto shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-700">
+                <h2 className="text-sm font-bold text-gray-100 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="bg-blue-500/20 text-blue-400 text-[10px] px-1.5 py-0.5 rounded-full border border-blue-500/30 font-bold">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </h2>
+                <button
+                  onClick={() => setFiltersOpen(false)}
+                  className="p-1.5 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-all"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="p-4">
+                <Filters filters={filters} onFilterChange={setFilters} />
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Header */}
         <div className="mb-8">
@@ -330,9 +395,6 @@ function HomeContent() {
           )}
         </div>
 
-        {/* Filters */}
-        <Filters filters={filters} onFilterChange={setFilters} />
-
         {/* Sankey Visualization */}
         {analyticsLoading ? (
           <div className="bg-[#1a1f2e] rounded-xl shadow-lg p-12 mb-8 flex flex-col items-center justify-center gap-4">
@@ -340,7 +402,7 @@ function HomeContent() {
             <p className="text-gray-400 text-lg">Loading analytics data from BigQuery…</p>
           </div>
         ) : (
-          <SankeyVisualization data={analyticsData} conversationTypes={filters.conversationTypes} />
+          <SankeyVisualization data={analyticsData} />
         )}
 
         {/* Detailed Stats */}
